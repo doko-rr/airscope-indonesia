@@ -15,9 +15,7 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(port);
 
-  console.log(
-    `AirScope API running at http://localhost:${port}/api/v1`,
-  );
+  console.log(`AirScope API running at http://localhost:${port}/api/v1`);
 }
 
 void bootstrap();
