@@ -1,0 +1,19 @@
+{
+  "name": "airscope-indonesia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hybrid IoT and satellite air quality monitoring platform",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\"",
+    "clean": "turbo run clean && rm -rf node_modules .turbo"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.7"
+  },
+  "packageManager": "pnpm@12.9.1"
+}
