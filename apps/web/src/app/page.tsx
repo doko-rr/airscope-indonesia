@@ -1,22 +1,19 @@
-import { getStationOverview } from "@/lib/airscope-api";
-import type {
-  SensorStatus,
-  StationWithMeasurement,
-} from "@/types/sensor";
+import { getStationOverview } from '@/lib/airscope-api';
+import type { SensorStatus, StationWithMeasurement } from '@/types/sensor';
 
 function statusClass(status: SensorStatus): string {
   const styles: Record<SensorStatus, string> = {
-    ONLINE: "bg-emerald-500",
-    WARNING: "bg-amber-500",
-    OFFLINE: "bg-zinc-400",
-    MAINTENANCE: "bg-sky-500",
+    ONLINE: 'bg-emerald-500',
+    WARNING: 'bg-amber-500',
+    OFFLINE: 'bg-zinc-400',
+    MAINTENANCE: 'bg-sky-500',
   };
 
   return styles[status];
 }
 
 function formatNumber(value: number, decimals = 1): string {
-  return new Intl.NumberFormat("id-ID", {
+  return new Intl.NumberFormat('id-ID', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }).format(value);
@@ -24,20 +21,18 @@ function formatNumber(value: number, decimals = 1): string {
 
 function calculateSummary(stations: StationWithMeasurement[]) {
   const onlineStations = stations.filter(
-    ({ station }) => station.status === "ONLINE",
+    ({ station }) => station.status === 'ONLINE',
   ).length;
 
   const averagePm25 =
     stations.reduce(
-      (total, item) =>
-        total + item.latest.measurements.pm25UgM3,
+      (total, item) => total + item.latest.measurements.pm25UgM3,
       0,
     ) / stations.length;
 
   const highestStation = [...stations].sort(
     (first, second) =>
-      second.latest.measurements.pm25UgM3 -
-      first.latest.measurements.pm25UgM3,
+      second.latest.measurements.pm25UgM3 - first.latest.measurements.pm25UgM3,
   )[0];
 
   return {
@@ -65,8 +60,7 @@ export default async function Home() {
           </h1>
 
           <p className="mt-4 text-sm leading-6 text-zinc-600">
-            Pastikan NestJS berjalan pada
-            {" "}
+            Pastikan NestJS berjalan pada{' '}
             <code className="font-mono text-zinc-900">
               http://localhost:4000
             </code>
@@ -151,7 +145,7 @@ export default async function Home() {
               <p className="mt-1 font-mono text-xs text-zinc-500">
                 {formatNumber(
                   summary.highestStation.latest.measurements.pm25UgM3,
-                )}{" "}
+                )}{' '}
                 µg/m³
               </p>
             </article>
@@ -197,7 +191,7 @@ export default async function Home() {
                   </h3>
 
                   <p className="mt-1 text-sm text-zinc-500">
-                    {station.city} · {station.profile.replaceAll("_", " ")}
+                    {station.city} · {station.profile.replaceAll('_', ' ')}
                   </p>
                 </div>
 
@@ -210,9 +204,7 @@ export default async function Home() {
                     {formatNumber(latest.measurements.pm25UgM3)}
                   </p>
 
-                  <p className="font-mono text-[10px] text-zinc-500">
-                    µg/m³
-                  </p>
+                  <p className="font-mono text-[10px] text-zinc-500">µg/m³</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -222,10 +214,7 @@ export default async function Home() {
                     </p>
 
                     <p className="mt-2 text-lg">
-                      {formatNumber(
-                        latest.measurements.temperatureC,
-                      )}{" "}
-                      °C
+                      {formatNumber(latest.measurements.temperatureC)} °C
                     </p>
                   </div>
 
@@ -235,9 +224,7 @@ export default async function Home() {
                     </p>
 
                     <p className="mt-2 text-lg">
-                      {formatNumber(
-                        latest.measurements.humidityPct,
-                      )}%
+                      {formatNumber(latest.measurements.humidityPct)}%
                     </p>
                   </div>
                 </div>
@@ -248,7 +235,7 @@ export default async function Home() {
                   </p>
 
                   <p className="mt-2 text-sm">
-                    {latest.device.rssiDbm} dBm ·{" "}
+                    {latest.device.rssiDbm} dBm ·{' '}
                     {formatNumber(latest.quality.score)}%
                   </p>
 

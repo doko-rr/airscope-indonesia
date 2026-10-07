@@ -1,16 +1,12 @@
-export type SensorStatus =
-  | "ONLINE"
-  | "WARNING"
-  | "OFFLINE"
-  | "MAINTENANCE";
+export type SensorStatus = 'ONLINE' | 'WARNING' | 'OFFLINE' | 'MAINTENANCE';
 
 export type SensorProfile =
-  | "URBAN_TRAFFIC"
-  | "RESIDENTIAL"
-  | "ROADSIDE"
-  | "INDUSTRIAL"
-  | "BACKGROUND"
-  | "SUBURBAN";
+  | 'URBAN_TRAFFIC'
+  | 'RESIDENTIAL'
+  | 'ROADSIDE'
+  | 'INDUSTRIAL'
+  | 'BACKGROUND'
+  | 'SUBURBAN';
 
 export interface SensorStation {
   code: string;
@@ -34,7 +30,7 @@ export interface SensorStation {
 export interface SensorMeasurement {
   stationCode: string;
   observedAt: string;
-  source: "SIMULATION";
+  source: 'SIMULATION';
   simulationModel: string;
   measurements: {
     pm25UgM3: number;
@@ -52,12 +48,12 @@ export interface SensorMeasurement {
     status: SensorStatus;
     batteryVoltage: number;
     rssiDbm: number;
-    network: "LTE";
+    network: 'LTE';
     firmware: string;
   };
   quality: {
     score: number;
-    label: "GOOD" | "MODERATE" | "LOW";
+    label: 'GOOD' | 'MODERATE' | 'LOW';
   };
 }
 
@@ -65,7 +61,7 @@ export interface SensorsResponse {
   data: SensorStation[];
   metadata: {
     count: number;
-    source: "SIMULATION";
+    source: 'SIMULATION';
     notice: string;
   };
 }

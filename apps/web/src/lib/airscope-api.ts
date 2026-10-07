@@ -2,17 +2,16 @@ import type {
   LatestMeasurementResponse,
   SensorsResponse,
   StationWithMeasurement,
-} from "@/types/sensor";
+} from '@/types/sensor';
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  "http://localhost:4000/api/v1";
+  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
-    cache: "no-store",
+    cache: 'no-store',
     headers: {
-      Accept: "application/json",
+      Accept: 'application/json',
     },
   });
 
@@ -26,20 +25,17 @@ async function fetchJson<T>(path: string): Promise<T> {
 }
 
 export async function getSensors(): Promise<SensorsResponse> {
-  return fetchJson<SensorsResponse>("/sensors");
+  return fetchJson<SensorsResponse>('/sensors');
 }
 
-export async function getStationOverview(): Promise<
-  StationWithMeasurement[]
-> {
+export async function getStationOverview(): Promise<StationWithMeasurement[]> {
   const sensorsResponse = await getSensors();
 
   const measurements = await Promise.all(
     sensorsResponse.data.map(async (station) => {
-      const response =
-        await fetchJson<LatestMeasurementResponse>(
-          `/sensors/${station.code}/latest`,
-        );
+      const response = await fetchJson<LatestMeasurementResponse>(
+        `/sensors/${station.code}/latest`,
+      );
 
       return {
         station,

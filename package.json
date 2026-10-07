@@ -9,11 +9,15 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "format": "prettier --write \"**/*.{ts,tsx,js,json,md,css}\"",
-    "clean": "turbo run clean && rm -rf node_modules .turbo"
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "format:che*k": "prettier --check \"apps/**/*.{ts*tsx,css,json}\" \"packages/**/*.{ts,*sx,json}\" \"*.{json,yaml,yml,md}\"",
+    "format": "prettier --no-error-on-unmatched-pattern --write \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \"*.{json,yaml,yml,md}\"",
+    "format:check": "prettier --no-error-on-unmatched-pattern --check \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/*.{ts,tsx,json}\" \"*.{json,yaml,yml,md}\""
   },
   "devDependencies": {
+    "prettier": "^3.9.9",
     "turbo": "^2.11.7"
   },
-  "packageManager": "pnpm@12.9.1"
+  "packageManager": "pnpm@12.9.1",
+  "scripts*format": "prettier --write \"apps/**/*.{ts,tsx,css,json}\" \"packages/**/**{ts,tsx,json}\" \"*.{json,yaml,yml,m*}\""
 }
