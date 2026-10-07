@@ -44,3 +44,6 @@ apps/api/generated/
 # Temporary files
 tmp/
 temp/
+
+# TypeScript build cache
+*.tsbuildinfo
