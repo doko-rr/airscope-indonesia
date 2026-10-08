@@ -1,7 +1,7 @@
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AtlasContextStrip } from '@/components/layout/atlas-context-strip';
 import { OperationalHeader } from '@/components/layout/operational-header';
-import { MapPlaceholder } from '@/components/map/map-placeholder';
+import { AirQualityMap } from '@/components/map/air-quality-map';
 import { HistoryPlaceholder } from '@/components/overview/history-placeholder';
 import { NetworkSummary } from '@/components/overview/network-summary';
 import { StationDossier } from '@/components/overview/station-dossier';
@@ -27,16 +27,21 @@ export default async function Home() {
           />
           <AtlasContextStrip />
           <NetworkSummary stations={stations} />
-          <div className="workspace-grid">
-            <MapPlaceholder
-              stations={stations}
-              selectedCode={selected.station.code}
-            />
-            <StationDossier item={selected} />
-          </div>
-          <div className="lower-grid">
-            <HistoryPlaceholder />
-            <StationLedger stations={stations} />
+          <div className="dashboard-columns">
+            <div className="dashboard-column dashboard-column-map">
+              <AirQualityMap
+                stations={stations}
+                selectedCode={selected.station.code}
+              />
+
+              <HistoryPlaceholder />
+
+              <StationLedger stations={stations} />
+            </div>
+
+            <div className="dashboard-column dashboard-column-observation">
+              <StationDossier item={selected} />
+            </div>
           </div>
         </div>
       </main>

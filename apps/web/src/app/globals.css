@@ -1241,3 +1241,635 @@ body {
   }
 }
 /* AIRSCOPE_DESKTOP_READABILITY_PATCH_END */
+
+/* AIRSCOPE_MAPLIBRE_PATCH_START */
+.maplibre-stage {
+  position: relative;
+  min-height: 724px;
+  overflow: hidden;
+  background: #ece8de;
+}
+
+.maplibre-container {
+  position: absolute;
+  inset: 0;
+}
+
+.maplibre-container .maplibregl-canvas {
+  outline: none;
+}
+
+.maplibre-container .maplibregl-ctrl-group {
+  border: 1px solid var(--hairline);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.maplibre-container .maplibregl-ctrl-group button {
+  width: 34px;
+  height: 34px;
+  border-radius: 0;
+}
+
+.maplibre-container .maplibregl-ctrl-scale {
+  border-color: var(--ink);
+  background: rgba(247, 246, 242, 0.92);
+  color: var(--ink);
+  font: 10px monospace;
+}
+
+.maplibre-container .maplibregl-ctrl-attrib {
+  color: #5d655f;
+  background: rgba(247, 246, 242, 0.9);
+  font: 10px monospace;
+}
+
+.map-frame-label {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  color: #6d665d;
+  background: rgba(247, 246, 242, 0.84);
+  border: 1px solid rgba(216, 212, 202, 0.8);
+}
+
+.map-frame-title {
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 9px;
+  font:
+    italic 16px Georgia,
+    serif;
+}
+
+.maplibre-station-marker {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.maplibre-station-marker .marker-core {
+  position: absolute;
+  inset: 4px;
+  border: 2px solid var(--healthy);
+  background: var(--canvas);
+}
+
+.maplibre-station-marker .marker-label {
+  position: absolute;
+  left: 20px;
+  top: -4px;
+  display: block;
+  min-width: 190px;
+  padding: 4px 6px;
+  border-left: 1px solid var(--healthy);
+  color: var(--healthy-dark);
+  background: rgba(247, 246, 242, 0.9);
+  text-align: left;
+  font: 10px/1.35 monospace;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.maplibre-station-marker .marker-label strong,
+.maplibre-station-marker .marker-label small {
+  display: block;
+}
+
+.maplibre-station-marker .marker-label small {
+  margin-top: 2px;
+  font-size: 9px;
+}
+
+.maplibre-station-marker.is-advisory .marker-core {
+  border-color: var(--advisory);
+  border-radius: 50%;
+  outline: 1px dashed var(--advisory);
+  outline-offset: 5px;
+}
+
+.maplibre-station-marker.is-advisory .marker-label {
+  color: #8a4800;
+  border-left-color: var(--advisory);
+}
+
+.maplibre-station-marker.is-selected {
+  width: 30px;
+  height: 30px;
+}
+
+.maplibre-station-marker.is-selected .marker-core {
+  inset: 4px;
+  border: 4px double var(--healthy-dark);
+  border-radius: 50%;
+  outline: 1px dashed var(--healthy);
+  outline-offset: 7px;
+}
+
+.maplibre-station-marker.is-selected .marker-label {
+  left: 34px;
+  top: -1px;
+  color: white;
+  border-left: 0;
+  background: var(--ink);
+}
+
+.maplibre-station-marker:focus-visible {
+  outline: 2px solid var(--critical);
+  outline-offset: 8px;
+}
+
+.maplibre-legend {
+  z-index: 3;
+}
+
+.airscope-popup .maplibregl-popup-content {
+  min-width: 220px;
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--canvas);
+  box-shadow: 5px 5px 0 rgba(26, 29, 32, 0.18);
+}
+
+.airscope-popup .maplibregl-popup-tip {
+  border-top-color: var(--ink);
+}
+
+.popup-content {
+  padding: 12px;
+  color: var(--ink);
+  font: 10px/1.4 monospace;
+  text-transform: uppercase;
+}
+
+.popup-content > strong,
+.popup-content > span {
+  display: block;
+}
+
+.popup-content > span {
+  margin-top: 3px;
+  color: var(--muted);
+}
+
+.popup-content dl {
+  margin: 10px 0 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.popup-content dl div {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 6px;
+}
+
+.popup-content dt,
+.popup-content dd {
+  margin: 0;
+}
+/* AIRSCOPE_MAPLIBRE_PATCH_END */
+
+/* AIRSCOPE_LEAFLET_PATCH_START */
+.leaflet-stage,
+.leaflet-container {
+  min-height: 724px;
+}
+
+.leaflet-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #ece8de;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.airscope-raster-tiles {
+  filter: grayscale(62%) sepia(10%) contrast(94%) brightness(105%);
+}
+
+.leaflet-control-zoom,
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.leaflet-control-zoom {
+  border: 1px solid var(--hairline) !important;
+}
+
+.leaflet-control-zoom a {
+  border-radius: 0 !important;
+}
+
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+  background: rgba(247, 246, 242, 0.92) !important;
+  color: var(--ink) !important;
+  font: 10px monospace !important;
+}
+
+.airscope-div-icon {
+  background: transparent;
+  border: 0;
+}
+
+.leaflet-station-marker {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.leaflet-station-marker .marker-core {
+  position: absolute;
+  inset: 4px;
+  border: 2px solid var(--healthy);
+  background: var(--canvas);
+}
+
+.leaflet-station-marker .marker-label {
+  position: absolute;
+  left: 20px;
+  top: -4px;
+  display: block;
+  min-width: 190px;
+  padding: 4px 6px;
+  border-left: 1px solid var(--healthy);
+  color: var(--healthy-dark);
+  background: rgba(247, 246, 242, 0.92);
+  text-align: left;
+  font: 10px/1.35 monospace;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.leaflet-station-marker .marker-label strong,
+.leaflet-station-marker .marker-label small {
+  display: block;
+}
+
+.leaflet-station-marker .marker-label small {
+  margin-top: 2px;
+  font-size: 9px;
+}
+
+.leaflet-station-marker.is-advisory .marker-core {
+  border-color: var(--advisory);
+  border-radius: 50%;
+  outline: 1px dashed var(--advisory);
+  outline-offset: 5px;
+}
+
+.leaflet-station-marker.is-advisory .marker-label {
+  color: #8a4800;
+  border-left-color: var(--advisory);
+}
+
+.leaflet-station-marker.is-selected {
+  width: 30px;
+  height: 30px;
+}
+
+.leaflet-station-marker.is-selected .marker-core {
+  inset: 4px;
+  border: 4px double var(--healthy-dark);
+  border-radius: 50%;
+  outline: 1px dashed var(--healthy);
+  outline-offset: 7px;
+}
+
+.leaflet-station-marker.is-selected .marker-label {
+  left: 34px;
+  top: -1px;
+  color: white;
+  border-left: 0;
+  background: var(--ink);
+}
+
+.leaflet-station-marker:focus-visible {
+  outline: 2px solid var(--critical);
+  outline-offset: 8px;
+}
+
+.leaflet-popup-content-wrapper {
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--canvas);
+  box-shadow: 5px 5px 0 rgba(26, 29, 32, 0.18);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+}
+
+.leaflet-popup-tip {
+  background: var(--ink);
+}
+/* AIRSCOPE_LEAFLET_PATCH_END */
+
+/* AIRSCOPE_MAP_COMPACT_PATCH_START */
+/* Compact desktop map: prevents the map and station annotations from dominating the dashboard. */
+.map-panel {
+  min-height: 0;
+  height: 590px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.maplibre-stage,
+.maplibre-container,
+.leaflet-stage,
+.leaflet-container {
+  min-height: 0;
+  height: 100%;
+}
+
+.map-toolbar {
+  min-height: 42px;
+  align-items: center;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: thin;
+}
+
+.map-toolbar span,
+.map-toolbar strong {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.map-metadata {
+  min-height: 50px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.map-metadata > * {
+  flex: 0 0 auto;
+}
+
+.map-frame-title {
+  top: 12px;
+  padding: 5px 8px;
+  font-size: 14px;
+}
+
+.maplibre-legend {
+  right: 10px;
+  bottom: 24px;
+  width: 220px;
+  padding: 9px;
+  font-size: 9px;
+  opacity: 0.94;
+}
+
+.leaflet-station-marker .marker-label {
+  min-width: 0;
+  max-width: 145px;
+  padding: 3px 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.leaflet-station-marker .marker-label strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaflet-station-marker .marker-label small {
+  font-size: 8px;
+}
+
+/* Normal stations remain compact. Full technical labels are reserved for selected/advisory points. */
+.leaflet-station-marker:not(.is-selected):not(.is-advisory) .marker-label {
+  max-width: 104px;
+  opacity: 0.82;
+}
+
+.leaflet-station-marker:not(.is-selected):not(.is-advisory)
+  .marker-label
+  small {
+  display: none;
+}
+
+.leaflet-station-marker:not(.is-selected):not(.is-advisory):hover .marker-label,
+.leaflet-station-marker:not(.is-selected):not(.is-advisory):focus-visible
+  .marker-label {
+  max-width: 190px;
+  opacity: 1;
+  z-index: 900;
+}
+
+.leaflet-station-marker:not(.is-selected):not(.is-advisory):hover
+  .marker-label
+  small,
+.leaflet-station-marker:not(.is-selected):not(.is-advisory):focus-visible
+  .marker-label
+  small {
+  display: block;
+}
+
+.leaflet-station-marker.is-selected .marker-label,
+.leaflet-station-marker.is-advisory .marker-label {
+  max-width: 190px;
+  z-index: 850;
+}
+
+.leaflet-popup-content-wrapper {
+  max-width: 240px;
+}
+
+.popup-content {
+  padding: 10px;
+  font-size: 9px;
+}
+
+.popup-content dl {
+  margin-top: 8px;
+}
+
+.popup-content dl div {
+  padding-top: 5px;
+}
+
+/* Keep Leaflet above the raster, but below our editorial overlays. */
+.leaflet-pane {
+  z-index: 400;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 700;
+}
+
+.map-frame-label,
+.maplibre-legend {
+  z-index: 750;
+}
+
+@media (max-width: 1390px) {
+  .map-panel {
+    height: 540px;
+  }
+
+  .maplibre-legend {
+    width: 205px;
+  }
+}
+/* AIRSCOPE_MAP_COMPACT_PATCH_END */
+
+/* AIRSCOPE_TWO_COLUMN_LAYOUT_START */
+/* Two independent vertical stacks:
+   left = map -> history, right = dossier -> station ledger. */
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 8fr) minmax(500px, 4fr);
+  align-items: start;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.dashboard-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-self: start;
+}
+
+.dashboard-column-map {
+  border-right: 1px solid var(--hairline);
+}
+
+.dashboard-column-map .map-panel {
+  width: 100%;
+  height: 590px;
+  min-height: 0;
+  border-right: 0;
+}
+
+.dashboard-column-map .history-panel {
+  width: 100%;
+  border-top: 1px solid var(--hairline);
+  border-right: 0;
+}
+
+.dashboard-column-map .history-panel > header {
+  min-height: 68px;
+}
+
+.dashboard-column-map .history-canvas {
+  min-height: 230px;
+}
+
+.dashboard-column-observation {
+  border-left: 0;
+}
+
+.dashboard-column-observation .station-dossier {
+  width: 100%;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.dashboard-column-observation .station-ledger {
+  width: 100%;
+  min-width: 0;
+}
+
+.dashboard-column-observation .ledger-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.dashboard-column-observation .station-ledger table {
+  min-width: 760px;
+}
+
+/* Old grid classes are no longer rendered, but neutralize them if stale markup
+   appears during Fast Refresh. */
+.workspace-grid,
+.lower-grid {
+  display: contents;
+}
+
+@media (max-width: 1390px) {
+  .dashboard-columns {
+    grid-template-columns: minmax(0, 7fr) minmax(470px, 5fr);
+  }
+
+  .dashboard-column-map .map-panel {
+    height: 540px;
+  }
+
+  .dashboard-column-observation .station-ledger table {
+    min-width: 720px;
+  }
+}
+/* AIRSCOPE_TWO_COLUMN_LAYOUT_END */
+
+/* AIRSCOPE_LEDGER_LAYOUT_START */
+/* Use the wide left column for map, history, and the station ledger.
+   The narrow right column is reserved for the selected-station dossier. */
+.dashboard-column-map .station-ledger {
+  width: 100%;
+  min-width: 0;
+  border-top: 1px solid var(--hairline);
+  border-right: 0;
+}
+
+.dashboard-column-map .station-ledger > header {
+  min-height: 64px;
+}
+
+.dashboard-column-map .ledger-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.dashboard-column-map .station-ledger table {
+  width: 100%;
+  min-width: 980px;
+}
+
+.dashboard-column-map .station-ledger th,
+.dashboard-column-map .station-ledger td {
+  padding-block: 11px;
+}
+
+.dashboard-column-observation {
+  align-self: start;
+  background: var(--canvas);
+}
+
+.dashboard-column-observation .station-dossier {
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* Undo earlier right-column ledger rules if the old patch is still present. */
+.dashboard-column-observation .station-ledger {
+  display: none;
+}
+
+@media (max-width: 1390px) {
+  .dashboard-column-map .station-ledger table {
+    min-width: 900px;
+  }
+}
+/* AIRSCOPE_LEDGER_LAYOUT_END */

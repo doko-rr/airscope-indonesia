@@ -50,3 +50,39 @@ temp/
 
 # Local CSS backups
 *.before-font-scale-*
+
+# Local MapLibre backups
+.maplibre-backup-*/
+
+# Local MapLibre backups
+.maplibre-backup-*/
+
+# Local MapLibre fix backups
+*.before-maplibre-fix
+
+# Local map fix backups
+*.before-blank-map-fix
+
+# Local map fix backups
+*.before-blank-map-fix
+
+# Local MapLibre worker fix backups
+*.before-local-worker-fix
+
+# Local MapLibre worker fix backups
+*.before-local-worker-fix
+
+# Local raster map replacement backups
+*.before-raster-map-replacement
+
+# Local Leaflet migration backups
+*.before-leaflet
+
+# Local compact-map backups
+*.before-map-compact
+
+# Local two-column layout backups
+*.before-two-column-*
+
+# Local ledger-layout backups
+*.before-ledger-layout-*
