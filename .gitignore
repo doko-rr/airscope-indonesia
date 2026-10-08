@@ -47,3 +47,6 @@ temp/
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# Local CSS backups
+*.before-font-scale-*
