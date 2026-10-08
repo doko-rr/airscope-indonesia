@@ -9,11 +9,16 @@ import type { StationWithMeasurement } from '@/types/sensor';
 interface AirQualityMapProps {
   stations: StationWithMeasurement[];
   selectedCode: string;
+  onSelectStation: (code: string) => void;
 }
 
 const BANDUNG_CENTER: [number, number] = [-6.9175, 107.6191];
 
-export function AirQualityMap({ stations, selectedCode }: AirQualityMapProps) {
+export function AirQualityMap({
+  stations,
+  selectedCode,
+  onSelectStation,
+}: AirQualityMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markersRef = useRef<LeafletMarker[]>([]);
@@ -121,6 +126,7 @@ export function AirQualityMap({ stations, selectedCode }: AirQualityMapProps) {
           );
 
         marker.on('click', () => {
+          onSelectStation(station.code);
           map.flyTo(
             [station.location.latitude, station.location.longitude],
             13,
@@ -135,6 +141,20 @@ export function AirQualityMap({ stations, selectedCode }: AirQualityMapProps) {
     return () => {
       cancelled = true;
     };
+  }, [onSelectStation, selectedCode, stations]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const selected = stations.find(
+      ({ station }) => station.code === selectedCode,
+    );
+    if (!map || !selected) return;
+
+    map.flyTo(
+      [selected.station.location.latitude, selected.station.location.longitude],
+      Math.max(map.getZoom(), 12),
+      { duration: 0.65 },
+    );
   }, [selectedCode, stations]);
 
   const recenter = () => {

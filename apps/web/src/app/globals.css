@@ -1873,3 +1873,40 @@ body {
   }
 }
 /* AIRSCOPE_LEDGER_LAYOUT_END */
+
+/* AIRSCOPE_STATION_SELECTION_START */
+.station-ledger tbody tr {
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.station-ledger tbody tr:hover {
+  background: #f0eee8;
+}
+
+.station-ledger tbody tr:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+.station-ledger tbody tr.is-selected {
+  background: #e5ede7;
+  box-shadow: inset 4px 0 0 var(--healthy);
+}
+
+.station-ledger tbody tr.is-selected td:first-child span,
+.station-ledger tbody tr.is-selected td:nth-child(3) b {
+  color: var(--healthy-dark);
+}
+
+.station-ledger tbody tr.is-advisory:not(.is-selected) {
+  background: #faf0e4;
+  box-shadow: inset 3px 0 0 var(--advisory);
+}
+
+.station-ledger tbody tr.is-advisory:not(.is-selected):hover {
+  background: #f6e6d3;
+}
+/* AIRSCOPE_STATION_SELECTION_END */

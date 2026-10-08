@@ -1,11 +1,8 @@
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AtlasContextStrip } from '@/components/layout/atlas-context-strip';
 import { OperationalHeader } from '@/components/layout/operational-header';
-import { AirQualityMap } from '@/components/map/air-quality-map';
-import { HistoryPlaceholder } from '@/components/overview/history-placeholder';
 import { NetworkSummary } from '@/components/overview/network-summary';
-import { StationDossier } from '@/components/overview/station-dossier';
-import { StationLedger } from '@/components/overview/station-ledger';
+import { OverviewWorkspace } from '@/components/overview/overview-workspace';
 import { getStationOverview } from '@/lib/airscope-api';
 import { formatObservationTime } from '@/lib/formatters';
 
@@ -27,22 +24,10 @@ export default async function Home() {
           />
           <AtlasContextStrip />
           <NetworkSummary stations={stations} />
-          <div className="dashboard-columns">
-            <div className="dashboard-column dashboard-column-map">
-              <AirQualityMap
-                stations={stations}
-                selectedCode={selected.station.code}
-              />
-
-              <HistoryPlaceholder />
-
-              <StationLedger stations={stations} />
-            </div>
-
-            <div className="dashboard-column dashboard-column-observation">
-              <StationDossier item={selected} />
-            </div>
-          </div>
+          <OverviewWorkspace
+            stations={stations}
+            initialSelectedCode={selected.station.code}
+          />
         </div>
       </main>
     );

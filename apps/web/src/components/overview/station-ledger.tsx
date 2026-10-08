@@ -1,11 +1,30 @@
-import type { StationWithMeasurement } from '@/types/sensor';
+'use client';
+
+import type { KeyboardEvent } from 'react';
 import { formatNumber, formatObservationTime } from '@/lib/formatters';
+import type { StationWithMeasurement } from '@/types/sensor';
 
 interface StationLedgerProps {
   stations: StationWithMeasurement[];
+  selectedCode: string;
+  onSelectStation: (code: string) => void;
 }
 
-export function StationLedger({ stations }: StationLedgerProps) {
+export function StationLedger({
+  stations,
+  selectedCode,
+  onSelectStation,
+}: StationLedgerProps) {
+  const selectWithKeyboard = (
+    event: KeyboardEvent<HTMLTableRowElement>,
+    code: string,
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelectStation(code);
+    }
+  };
+
   return (
     <section className="station-ledger">
       <header>
@@ -13,6 +32,7 @@ export function StationLedger({ stations }: StationLedgerProps) {
         <span>{stations.length} reporting units</span>
         <b>Interval: 5 min</b>
       </header>
+
       <div className="ledger-scroll">
         <table>
           <thead>
@@ -28,36 +48,51 @@ export function StationLedger({ stations }: StationLedgerProps) {
             </tr>
           </thead>
           <tbody>
-            {stations.map(({ station, latest }) => (
-              <tr
-                key={station.code}
-                className={
-                  station.status === 'WARNING' ? 'is-advisory' : undefined
-                }
-              >
-                <td>
-                  <strong>{station.code}</strong>
-                  <span>{station.name}</span>
-                </td>
-                <td>{station.profile.replaceAll('_', ' ')}</td>
-                <td>
-                  <b>
-                    {station.status === 'WARNING' ? 'Advisory' : station.status}
-                  </b>
-                </td>
-                <td>{formatNumber(latest.measurements.pm25UgM3)} µg/m³</td>
-                <td>{formatNumber(latest.measurements.temperatureC)} °C</td>
-                <td>{formatNumber(latest.measurements.humidityPct)}%</td>
-                <td>{latest.device.rssiDbm} dBm</td>
-                <td>{formatObservationTime(latest.observedAt)}</td>
-              </tr>
-            ))}
+            {stations.map(({ station, latest }) => {
+              const selected = station.code === selectedCode;
+              const advisory = station.status === 'WARNING';
+              const className = selected
+                ? 'is-selected'
+                : advisory
+                  ? 'is-advisory'
+                  : undefined;
+
+              return (
+                <tr
+                  key={station.code}
+                  className={className}
+                  tabIndex={0}
+                  aria-selected={selected}
+                  onClick={() => onSelectStation(station.code)}
+                  onKeyDown={(event) => selectWithKeyboard(event, station.code)}
+                >
+                  <td>
+                    <strong>{station.code}</strong>
+                    <span>{station.name}</span>
+                  </td>
+                  <td>{station.profile.replaceAll('_', ' ')}</td>
+                  <td>
+                    <b>
+                      {station.status === 'WARNING'
+                        ? 'Advisory'
+                        : station.status}
+                    </b>
+                  </td>
+                  <td>{formatNumber(latest.measurements.pm25UgM3)} µg/m³</td>
+                  <td>{formatNumber(latest.measurements.temperatureC)} °C</td>
+                  <td>{formatNumber(latest.measurements.humidityPct)}%</td>
+                  <td>{latest.device.rssiDbm} dBm</td>
+                  <td>{formatObservationTime(latest.observedAt)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
       <footer>
-        Values supplied dynamically by the AirScope REST API. Simulated
-        telemetry under AIRSIM-DETERMINISTIC-V1.
+        Select a station row or map marker to update the observation dossier.
+        Simulated telemetry under AIRSIM-DETERMINISTIC-V1.
       </footer>
     </section>
   );

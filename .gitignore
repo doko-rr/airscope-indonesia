@@ -86,3 +86,6 @@ temp/
 
 # Local ledger-layout backups
 *.before-ledger-layout-*
+
+# Local station-selection backups
+*.before-selection-*
