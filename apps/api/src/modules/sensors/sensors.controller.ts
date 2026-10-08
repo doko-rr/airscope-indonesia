@@ -1,4 +1,5 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { HistoryQueryDto } from './dto/history-query.dto';
 import { SensorsService } from './sensors.service';
 
 @Controller('sensors')
@@ -16,6 +17,27 @@ export class SensorsController {
         source: 'SIMULATION',
         notice:
           'Station metadata and measurements are simulated for development.',
+      },
+    };
+  }
+
+  @Get(':code/measurements')
+  getMeasurementHistory(
+    @Param('code') code: string,
+    @Query() query: HistoryQueryDto,
+  ) {
+    const history = this.sensorsService.getMeasurementHistory(
+      code,
+      query.hours,
+      query.interval,
+    );
+
+    return {
+      data: history,
+      metadata: {
+        count: history.measurements.length,
+        source: 'SIMULATION',
+        simulationModel: 'AIRSIM-DETERMINISTIC-V1',
       },
     };
   }

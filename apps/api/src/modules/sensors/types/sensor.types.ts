@@ -58,3 +58,19 @@ export interface SensorMeasurement {
     label: 'GOOD' | 'MODERATE' | 'LOW';
   };
 }
+
+export interface SensorHistoryPoint {
+  observedAt: string;
+  pm25UgM3: number;
+  pm10UgM3: number;
+  temperatureC: number;
+  humidityPct: number;
+}
+
+export interface SensorHistoryResult {
+  stationCode: string;
+  from: string;
+  to: string;
+  intervalMinutes: number;
+  measurements: SensorHistoryPoint[];
+}

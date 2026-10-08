@@ -95,3 +95,6 @@ temp/
 
 # Local refresh-hydration backups
 *.before-refresh-hydration-*
+
+# Local history API backups
+*.before-history-*
