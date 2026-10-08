@@ -89,3 +89,9 @@ temp/
 
 # Local station-selection backups
 *.before-selection-*
+
+# Local auto-refresh backups
+*.before-auto-refresh-*
+
+# Local refresh-hydration backups
+*.before-refresh-hydration-*
