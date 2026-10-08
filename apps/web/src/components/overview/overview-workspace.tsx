@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AirQualityMap } from '@/components/map/air-quality-map';
-import { HistoryPlaceholder } from '@/components/overview/history-placeholder';
+import { SensorHistoryChart } from '@/components/charts/sensor-history-chart';
 import { StationDossier } from '@/components/overview/station-dossier';
 import { StationLedger } from '@/components/overview/station-ledger';
 import type { StationWithMeasurement } from '@/types/sensor';
@@ -115,7 +115,10 @@ export function OverviewWorkspace({
             onSelectStation={setSelectedCode}
           />
 
-          <HistoryPlaceholder />
+          <SensorHistoryChart
+            stationCode={selectedStation.station.code}
+            stationName={selectedStation.station.name}
+          />
 
           <StationLedger
             stations={stations}

@@ -98,3 +98,6 @@ temp/
 
 # Local history API backups
 *.before-history-*
+
+# Local history-chart backups
+*.before-history-chart-*

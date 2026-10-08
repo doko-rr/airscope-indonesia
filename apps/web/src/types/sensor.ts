@@ -74,3 +74,26 @@ export interface StationWithMeasurement {
   station: SensorStation;
   latest: SensorMeasurement;
 }
+
+export interface SensorHistoryPoint {
+  observedAt: string;
+  pm25UgM3: number;
+  pm10UgM3: number;
+  temperatureC: number;
+  humidityPct: number;
+}
+
+export interface SensorHistoryResponse {
+  data: {
+    stationCode: string;
+    from: string;
+    to: string;
+    intervalMinutes: number;
+    measurements: SensorHistoryPoint[];
+  };
+  metadata: {
+    count: number;
+    source: 'SIMULATION';
+    simulationModel: string;
+  };
+}

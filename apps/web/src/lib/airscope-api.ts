@@ -1,5 +1,6 @@
 import type {
   LatestMeasurementResponse,
+  SensorHistoryResponse,
   SensorsResponse,
   StationWithMeasurement,
 } from '@/types/sensor';
@@ -45,4 +46,19 @@ export async function getStationOverview(): Promise<StationWithMeasurement[]> {
   );
 
   return measurements;
+}
+
+export async function getSensorHistory(
+  stationCode: string,
+  hours = 24,
+  interval = 60,
+): Promise<SensorHistoryResponse> {
+  const searchParams = new URLSearchParams({
+    hours: String(hours),
+    interval: String(interval),
+  });
+
+  return fetchJson<SensorHistoryResponse>(
+    `/sensors/${stationCode}/measurements?${searchParams.toString()}`,
+  );
 }
