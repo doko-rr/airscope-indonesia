@@ -1,3 +1,4 @@
+import { AlertsDirectory } from '@/components/alerts/alerts-directory';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AtlasContextStrip } from '@/components/layout/atlas-context-strip';
 import { OperationalHeader } from '@/components/layout/operational-header';
@@ -26,26 +27,17 @@ export default async function AlertsPage() {
             <span>Operational triage</span>
             <h1>Alerts</h1>
             <p>
-              Review active air-quality and telemetry conditions across the
-              Bandung observation network.
+              Prioritized air-quality and telemetry conditions derived from the
+              current Bandung observation network snapshot.
             </p>
           </div>
           <strong>
-            Stage 01
-            <small>Route shell</small>
+            Stage 02
+            <small>Live derivation</small>
           </strong>
         </section>
 
-        <section className="alerts-empty-state" aria-labelledby="alerts-title">
-          <span>Alerts directory</span>
-          <h2 id="alerts-title">Alert processing is ready for integration.</h2>
-          <p>
-            The route and application shell are now available. Sensor-derived
-            advisory, delayed, stale, and offline records will be connected in
-            the next stage.
-          </p>
-          <a href="/sensors">← Return to sensor directory</a>
-        </section>
+        <AlertsDirectory stations={stations} />
       </div>
     </main>
   );

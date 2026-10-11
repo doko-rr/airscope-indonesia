@@ -175,3 +175,6 @@ apps/web/.next/
 
 # Local Alerts route backups
 *.before-alerts-route-*
+
+# Local Alerts Stage 2 backups
+*.before-alerts-stage2-*
