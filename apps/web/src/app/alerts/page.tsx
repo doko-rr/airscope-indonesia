@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { AlertsDirectory } from '@/components/alerts/alerts-directory';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AtlasContextStrip } from '@/components/layout/atlas-context-strip';
@@ -32,12 +33,18 @@ export default async function AlertsPage() {
             </p>
           </div>
           <strong>
-            Stage 02
-            <small>Live derivation</small>
+            Stage 03
+            <small>Filter controls</small>
           </strong>
         </section>
 
-        <AlertsDirectory stations={stations} />
+        <Suspense
+          fallback={
+            <div className="alerts-loading">Loading alert controls…</div>
+          }
+        >
+          <AlertsDirectory stations={stations} generatedAtMs={Date.now()} />
+        </Suspense>
       </div>
     </main>
   );

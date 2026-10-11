@@ -178,3 +178,6 @@ apps/web/.next/
 
 # Local Alerts Stage 2 backups
 *.before-alerts-stage2-*
+
+# Local Alerts Stage 3 backups
+*.before-alerts-stage3-*

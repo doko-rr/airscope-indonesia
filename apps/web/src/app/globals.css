@@ -5300,3 +5300,74 @@ body {
   }
 }
 /* AIRSCOPE_ALERTS_STAGE2_END */
+
+/* AIRSCOPE_ALERTS_STAGE3_START */
+.alerts-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(300px, 1.5fr) repeat(
+      3,
+      minmax(150px, 0.75fr)
+    ) auto;
+  align-items: end;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--ink);
+  background: var(--panel);
+}
+.alerts-filter-bar label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.alerts-filter-bar label > span {
+  color: var(--muted);
+  font: 9px/1 monospace;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.alerts-filter-bar input,
+.alerts-filter-bar select {
+  width: 100%;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--hairline);
+  border-radius: 0;
+  color: var(--ink);
+  background: #fff;
+  font: 10px/1 monospace;
+  text-transform: uppercase;
+}
+.alerts-filter-bar button,
+.alerts-empty-state button {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: #fff;
+  font: 700 8px/1 monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.alerts-filter-bar button:hover,
+.alerts-empty-state button:hover {
+  color: #fff;
+  background: var(--ink);
+}
+.alerts-loading {
+  min-height: 240px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font: 10px monospace;
+  text-transform: uppercase;
+}
+@media (max-width: 1300px) {
+  .alerts-filter-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .alerts-filter-bar button {
+    justify-self: start;
+  }
+}
+/* AIRSCOPE_ALERTS_STAGE3_END */
