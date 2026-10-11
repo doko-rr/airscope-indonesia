@@ -31,10 +31,10 @@ export function AirQualityMap({
       if (cancelled || !containerRef.current || mapRef.current) return;
 
       const map = L.map(containerRef.current, {
+        maxZoom: 16,
         center: BANDUNG_CENTER,
         zoom: 11,
         minZoom: 8,
-        maxZoom: 18,
         zoomControl: false,
       });
 
@@ -43,11 +43,26 @@ export function AirQualityMap({
 
       const protocol = 'https:';
       const tileHost = '//tile.openstreetmap.org';
-      L.tileLayer(`${protocol}${tileHost}/{z}/{x}/{y}.png`, {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap contributors',
-        className: 'airscope-raster-tiles',
-      }).addTo(map);
+      const grayCanvasAttribution =
+        'Tiles &copy; Esri &mdash; Sources: Esri, TomTom, Garmin, FAO, NOAA, USGS, OpenStreetMap contributors, and the GIS User Community';
+
+      L.tileLayer(
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution: grayCanvasAttribution,
+          maxZoom: 16,
+        },
+      ).addTo(map);
+
+      L.tileLayer(
+        'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        {
+          attribution: grayCanvasAttribution,
+          maxZoom: 16,
+          pane: 'overlayPane',
+          opacity: 0.9,
+        },
+      ).addTo(map);
 
       mapRef.current = map;
       resizeObserver = new ResizeObserver(() => map.invalidateSize());
@@ -95,13 +110,14 @@ export function AirQualityMap({
         const icon = L.divIcon({
           className: 'airscope-div-icon',
           html: `
-            <button class="${classNames}" type="button" aria-label="${station.code}, ${station.name}">
+            <div class="${classNames}" aria-hidden="true">
               <span class="marker-core" aria-hidden="true"></span>
+              <span class="marker-code" aria-hidden="true">${station.code.replace('BDG-AQ-', '')}</span>
               <span class="marker-label">
                 <strong>${markerTitle}</strong>
                 <small>${markerDetail}</small>
               </span>
-            </button>
+            </div>
           `,
           iconSize: selected ? [30, 30] : [18, 18],
           iconAnchor: selected ? [15, 15] : [9, 9],
@@ -109,7 +125,13 @@ export function AirQualityMap({
 
         const marker = L.marker(
           [station.location.latitude, station.location.longitude],
-          { icon },
+          {
+            icon,
+            title: `${station.code} // ${station.name}`,
+            keyboard: true,
+            riseOnHover: true,
+            riseOffset: 500,
+          },
         )
           .addTo(map)
           .bindPopup(
@@ -125,14 +147,22 @@ export function AirQualityMap({
             { className: 'airscope-popup', closeButton: false },
           );
 
-        marker.on('click', () => {
+        marker.on('click', (event) => {
+          L.DomEvent.stopPropagation(event.originalEvent);
           onSelectStation(station.code);
+          marker.openPopup();
           map.flyTo(
             [station.location.latitude, station.location.longitude],
-            13,
-            { duration: 0.8 },
+            Math.max(map.getZoom(), 13),
+            { duration: 0.65 },
           );
         });
+
+        if (selected) {
+          window.requestAnimationFrame(() => {
+            if (map.hasLayer(marker)) marker.openPopup();
+          });
+        }
 
         return marker;
       });

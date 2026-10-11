@@ -1,16 +1,19 @@
+'use client';
+
+import { usePathname } from 'next/navigation';
 const navigation = [
-  ['01', 'Overview'],
-  ['02', 'Live Map'],
-  ['03', 'Sensors'],
-  ['04', 'Satellite'],
-  ['05', 'Comparison'],
-  ['06', 'Alerts'],
-  ['07', 'Devices'],
-  ['08', 'Reports'],
-  ['09', 'Settings'],
+  ['01', 'Overview', '/'],
+  ['02', 'Sensors', '/sensors'],
+  ['03', 'Satellite', '#'],
+  ['04', 'Comparison', '#'],
+  ['05', 'Alerts', '#'],
+  ['06', 'Devices', '#'],
+  ['07', 'Reports', '#'],
+  ['08', 'Settings', '#'],
 ] as const;
 
 export function AppSidebar() {
+  const pathname = usePathname();
   return (
     <aside className="shell-sidebar">
       <div className="brand-block">
@@ -25,19 +28,25 @@ export function AppSidebar() {
 
       <nav aria-label="Primary navigation">
         <ul className="rail-navigation">
-          {navigation.map(([index, label], itemIndex) => (
-            <li key={label}>
-              <a
-                className={itemIndex === 0 ? 'is-active' : undefined}
-                href={itemIndex === 0 ? '/' : '#'}
-                aria-current={itemIndex === 0 ? 'page' : undefined}
-              >
-                <span>{index}</span>
-                {label}
-                {label === 'Alerts' ? <b>01</b> : null}
-              </a>
-            </li>
-          ))}
+          {navigation.map(([index, label, href]) => {
+            const active =
+              href === '/'
+                ? pathname === '/'
+                : href !== '#' && pathname.startsWith(href);
+            return (
+              <li key={label}>
+                <a
+                  className={active ? 'is-active' : undefined}
+                  href={href}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <span>{index}</span>
+                  {label}
+                  {label === 'Alerts' ? <b>01</b> : null}
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 

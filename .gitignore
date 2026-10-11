@@ -9,7 +9,6 @@ build/
 out/
 .turbo/
 coverage/
-
 # Environment variables
 .env
 .env.local
@@ -17,87 +16,160 @@ coverage/
 .env.test.local
 .env.production.local
 !.env.example
-
 # Logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
-
 # Editors
 .vscode/
 .idea/
 *.swp
 *.swo
-
 # Operating systems
 .DS_Store
 Thumbs.db
 *:Zone.Identifier
-
 # Prisma local files
 apps/api/prisma/dev.db
 apps/api/prisma/dev.db-journal
-
 # Generated files
 apps/api/generated/
-
 # Temporary files
 tmp/
 temp/
-
 # TypeScript build cache
 *.tsbuildinfo
-
 # Local CSS backups
 *.before-font-scale-*
-
 # Local MapLibre backups
 .maplibre-backup-*/
-
-# Local MapLibre backups
-.maplibre-backup-*/
-
 # Local MapLibre fix backups
 *.before-maplibre-fix
-
 # Local map fix backups
 *.before-blank-map-fix
-
-# Local map fix backups
-*.before-blank-map-fix
-
 # Local MapLibre worker fix backups
 *.before-local-worker-fix
-
-# Local MapLibre worker fix backups
-*.before-local-worker-fix
-
 # Local raster map replacement backups
 *.before-raster-map-replacement
-
 # Local Leaflet migration backups
 *.before-leaflet
-
 # Local compact-map backups
 *.before-map-compact
-
 # Local two-column layout backups
 *.before-two-column-*
-
 # Local ledger-layout backups
 *.before-ledger-layout-*
-
 # Local station-selection backups
 *.before-selection-*
-
 # Local auto-refresh backups
 *.before-auto-refresh-*
-
 # Local refresh-hydration backups
 *.before-refresh-hydration-*
-
 # Local history API backups
 *.before-history-*
-
 # Local history-chart backups
 *.before-history-chart-*
+# Local history range backups
+*.before-history-ranges-*
+# Local history-button backups
+*.before-history-buttons-*
+# Local button-refresh backups
+*.before-buttons-refresh-*
+# Local final history-button backups
+*.before-history-buttons-final-*
+# Local active-range backups
+*.before-active-full-*
+# Local collapsible-summary backups
+*.before-collapsible-summary-*
+# Local summary-toggle UX backups
+*.before-summary-toggle-ux-*
+# Local compact-summary backups
+*.before-summary-compact-*
+# Local typography backups
+*.before-global-type-*
+# Local ticker-loop v2 backups
+*.before-ticker-v2-*
+# Local final ticker backups
+*.before-ticker-final-*
+# Local marker-clarity backups
+*.before-marker-clarity-*
+# Local simple-marker backups
+*.before-simple-markers-*
+# Local single-click marker backups
+*.before-single-click-*
+# Local sensors-directory backups
+*.before-sensors-directory-*
+# Local navigation backups
+*.before-navigation-*
+# Local sensors-header backups
+*.before-sensors-header-*
+# Local sensors title-copy backups
+*.before-title-copy-*
+# Local shared-layout backups
+*.before-shared-layout-*
+# Local shared-layout rollback backups
+*.before-shared-layout-rollback-*
+# Local sensor-detail backups
+*.before-sensor-detail-*
+# Local online-indicator backups
+*.before-online-color-*
+# Local online-badge force backups
+*.before-online-badge-force-*
+# Local sensor-tabs backups
+*.before-sensor-tabs-*
+# Local gray-map backups
+*.before-gray-map-*
+# Local pure-gray-map backups
+*.before-pure-gray-map-*
+# Local native gray v2 backups
+*.before-native-gray-v2-*
+# Local gray maxzoom v2 backups
+*.before-gray-maxzoom-v2-*
+# Local 200m zoom-limit backups
+*.before-limit-zoom-200m-*
+# Local autocomplete v2 backups
+*.before-autocomplete-v2-*
+# Local compact sensor-search backups
+*.before-compact-sensor-search-*
+# Local aligned sensor-filter backups
+*.before-aligned-sensor-filters-*
+# Local compact filter-control backups
+*.before-compact-filter-controls-*
+# Local final sensor-filter layout backups
+*.before-final-filter-layout-*
+# Local reposition filter-layout backups
+*.before-reposition-filter-layout-*
+# Local exact filter-layout backups
+*.before-exact-filter-layout-*
+# Local left-right filter-layout backups
+*.before-left-right-filter-layout-*
+# Local last-seen backups
+*.before-last-seen-*
+# Local refined autocomplete backups
+*.before-refined-autocomplete-*
+# Local autocomplete-indicator backups
+*.before-autocomplete-indicators-*
+# Local equal status-badge backups
+*.before-equal-status-badges-*
+# Local Sensors CSS cleanup backups
+*.before-sensors-css-cleanup-*
+# Local Active Issues V2 backups
+*.before-active-issues-v2-*
+# Local compact Active Issues V2 backups
+*.before-compact-active-issues-v2-*
+# Local patch and rollback files
+*.before-*
+*.bak
+*.backup
+# Next.js generated files
+apps/web/.next/
+# Local logs
+
+# Local ESLint cleanup backups
+*.before-eslint-cleanup-*
+
+# Local Overview shell restore backups
+*.before-overview-shell-restore-*
+
+# Local Overview map-height backups
+*.before-overview-map-height-*

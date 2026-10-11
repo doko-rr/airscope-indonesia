@@ -1,7 +1,7 @@
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AtlasContextStrip } from '@/components/layout/atlas-context-strip';
 import { OperationalHeader } from '@/components/layout/operational-header';
-import { NetworkSummary } from '@/components/overview/network-summary';
+import { CollapsibleNetworkSummary } from '@/components/overview/collapsible-network-summary';
 import { OverviewWorkspace } from '@/components/overview/overview-workspace';
 import { getStationOverview } from '@/lib/airscope-api';
 import { formatObservationTime } from '@/lib/formatters';
@@ -23,7 +23,7 @@ export default async function Home() {
             )}
           />
           <AtlasContextStrip />
-          <NetworkSummary stations={stations} />
+          <CollapsibleNetworkSummary stations={stations} />
           <OverviewWorkspace
             stations={stations}
             initialSelectedCode={selected.station.code}

@@ -43,6 +43,7 @@ export function OverviewWorkspace({
   const [selectedCode, setSelectedCode] = useState(initialSelectedCode);
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshRevision, setRefreshRevision] = useState(0);
 
   const selectedStation = useMemo(
     () =>
@@ -53,6 +54,7 @@ export function OverviewWorkspace({
 
   const refreshData = useCallback(() => {
     setIsRefreshing(true);
+    setRefreshRevision((revision) => revision + 1);
     router.refresh();
     setSecondsRemaining(getSecondsUntilNextBucket());
 
@@ -118,6 +120,7 @@ export function OverviewWorkspace({
           <SensorHistoryChart
             stationCode={selectedStation.station.code}
             stationName={selectedStation.station.name}
+            refreshRevision={refreshRevision}
           />
 
           <StationLedger

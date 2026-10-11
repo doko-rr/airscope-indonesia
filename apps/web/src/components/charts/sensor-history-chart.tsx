@@ -1,13 +1,23 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ECharts, EChartsOption } from 'echarts';
 import { getSensorHistory } from '@/lib/airscope-api';
 import type { SensorHistoryPoint } from '@/types/sensor';
 
+type RangeKey = '6H' | '12H' | '24H' | '7D';
+
+interface RangeOption {
+  label: RangeKey;
+  hours: number;
+  interval: 5 | 15 | 30 | 60;
+  description: string;
+}
+
 interface SensorHistoryChartProps {
   stationCode: string;
   stationName: string;
+  refreshRevision?: number;
 }
 
 interface HistoryState {
@@ -16,17 +26,55 @@ interface HistoryState {
   message?: string;
 }
 
-function formatChartTime(value: string): string {
-  return new Intl.DateTimeFormat('id-ID', {
-    timeZone: 'Asia/Jakarta',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(value));
+interface PollutantStatistics {
+  minimum: number;
+  average: number;
+  maximum: number;
+}
+
+const RANGE_OPTIONS: RangeOption[] = [
+  { label: '6H', hours: 6, interval: 15, description: '15-minute interval' },
+  { label: '12H', hours: 12, interval: 30, description: '30-minute interval' },
+  { label: '24H', hours: 24, interval: 60, description: 'Hourly interval' },
+  { label: '7D', hours: 168, interval: 60, description: 'Hourly interval' },
+];
+
+function calculateStatistics(values: number[]): PollutantStatistics {
+  if (values.length === 0) {
+    return { minimum: 0, average: 0, maximum: 0 };
+  }
+
+  const total = values.reduce((sum, value) => sum + value, 0);
+
+  return {
+    minimum: Math.min(...values),
+    average: total / values.length,
+    maximum: Math.max(...values),
+  };
+}
+
+function formatChartTime(value: string, range: RangeKey): string {
+  const options: Intl.DateTimeFormatOptions =
+    range === '7D'
+      ? {
+          timeZone: 'Asia/Jakarta',
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+        }
+      : {
+          timeZone: 'Asia/Jakarta',
+          hour: '2-digit',
+          minute: '2-digit',
+        };
+
+  return new Intl.DateTimeFormat('id-ID', options).format(new Date(value));
 }
 
 function formatTooltipTime(value: string): string {
   return new Intl.DateTimeFormat('id-ID', {
     timeZone: 'Asia/Jakarta',
+    weekday: 'short',
     day: '2-digit',
     month: 'short',
     hour: '2-digit',
@@ -34,24 +82,50 @@ function formatTooltipTime(value: string): string {
   }).format(new Date(value));
 }
 
+function StatisticValue({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="history-stat-value">
+      <span>{label}</span>
+      <strong>{value.toFixed(1)}</strong>
+      <small>µg/m³</small>
+    </div>
+  );
+}
+
 export function SensorHistoryChart({
   stationCode,
   stationName,
+  refreshRevision = 0,
 }: SensorHistoryChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ECharts | null>(null);
+  const [selectedRange, setSelectedRange] = useState<RangeKey>('24H');
   const [history, setHistory] = useState<HistoryState>({
     status: 'loading',
     points: [],
   });
 
+  const activeRange =
+    RANGE_OPTIONS.find((option) => option.label === selectedRange) ??
+    RANGE_OPTIONS[2];
+
+  const statistics = useMemo(() => {
+    const pm25 = calculateStatistics(
+      history.points.map((point) => point.pm25UgM3),
+    );
+    const pm10 = calculateStatistics(
+      history.points.map((point) => point.pm10UgM3),
+    );
+
+    return { pm25, pm10 };
+  }, [history.points]);
+
   useEffect(() => {
-    const controller = new AbortController();
     let active = true;
 
     setHistory({ status: 'loading', points: [] });
 
-    getSensorHistory(stationCode, 24, 60)
+    getSensorHistory(stationCode, activeRange.hours, activeRange.interval)
       .then((response) => {
         if (!active) return;
         setHistory({
@@ -60,7 +134,7 @@ export function SensorHistoryChart({
         });
       })
       .catch((error: unknown) => {
-        if (!active || controller.signal.aborted) return;
+        if (!active) return;
         setHistory({
           status: 'error',
           points: [],
@@ -73,9 +147,8 @@ export function SensorHistoryChart({
 
     return () => {
       active = false;
-      controller.abort();
     };
-  }, [stationCode]);
+  }, [activeRange.hours, activeRange.interval, refreshRevision, stationCode]);
 
   useEffect(() => {
     if (
@@ -99,15 +172,19 @@ export function SensorHistoryChart({
       chartRef.current = chart;
 
       const timestamps = history.points.map((point) => point.observedAt);
+      const labelInterval =
+        selectedRange === '7D'
+          ? Math.max(0, Math.floor(timestamps.length / 7) - 1)
+          : Math.max(0, Math.floor(timestamps.length / 6) - 1);
+
       const option: EChartsOption = {
-        animationDuration: 350,
+        animationDuration: 320,
         color: ['#2d6a4f', '#4f5752'],
         grid: {
-          left: 56,
+          left: 58,
           right: 24,
           top: 26,
-          bottom: 42,
-          containLabel: false,
+          bottom: 46,
         },
         tooltip: {
           trigger: 'axis',
@@ -121,8 +198,7 @@ export function SensorHistoryChart({
           },
           formatter: (params) => {
             const entries = Array.isArray(params) ? params : [params];
-            const first = entries[0];
-            const index = Number(first?.dataIndex ?? 0);
+            const index = Number(entries[0]?.dataIndex ?? 0);
             const point = history.points[index];
             if (!point) return '';
 
@@ -143,8 +219,9 @@ export function SensorHistoryChart({
             color: '#707973',
             fontFamily: 'monospace',
             fontSize: 10,
-            interval: 3,
-            formatter: (value: string) => formatChartTime(value),
+            interval: labelInterval,
+            hideOverlap: true,
+            formatter: (value: string) => formatChartTime(value, selectedRange),
           },
         },
         yAxis: {
@@ -163,10 +240,7 @@ export function SensorHistoryChart({
             fontSize: 10,
           },
           splitLine: {
-            lineStyle: {
-              color: '#d8d4ca',
-              width: 1,
-            },
+            lineStyle: { color: '#d8d4ca', width: 1 },
           },
         },
         series: [
@@ -206,26 +280,73 @@ export function SensorHistoryChart({
       chartRef.current?.dispose();
       chartRef.current = null;
     };
-  }, [history]);
+  }, [history, selectedRange]);
 
   return (
     <section className="history-panel history-chart-panel">
-      <header>
+      <header className="history-chart-header">
         <div>
-          <strong>24-hour particulate history</strong>
+          <strong>Particulate history</strong>
           <span>{stationCode}</span>
-          <em>{stationName} · Hourly deterministic simulation</em>
+          <em>{stationName} · Deterministic simulation</em>
         </div>
-        <p>
-          <i /> PM2.5 surface <span /> PM10 coarse
-        </p>
+
+        <div
+          className="history-range-control"
+          role="group"
+          aria-label="History time range"
+        >
+          {RANGE_OPTIONS.map((option) => (
+            <button
+              key={option.label}
+              type="button"
+              className={
+                selectedRange === option.label ? 'is-active' : undefined
+              }
+              aria-pressed={selectedRange === option.label}
+              onClick={() => setSelectedRange(option.label)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </header>
+
+      <div className="history-statistics" aria-label="Particulate statistics">
+        <article className="history-stat-group is-pm25">
+          <header>
+            <span className="history-stat-swatch" />
+            <strong>PM2.5</strong>
+            <small>Fine particulate</small>
+          </header>
+          <div className="history-stat-values">
+            <StatisticValue label="Minimum" value={statistics.pm25.minimum} />
+            <StatisticValue label="Average" value={statistics.pm25.average} />
+            <StatisticValue label="Maximum" value={statistics.pm25.maximum} />
+          </div>
+        </article>
+
+        <article className="history-stat-group is-pm10">
+          <header>
+            <span className="history-stat-swatch" />
+            <strong>PM10</strong>
+            <small>Coarse particulate</small>
+          </header>
+          <div className="history-stat-values">
+            <StatisticValue label="Minimum" value={statistics.pm10.minimum} />
+            <StatisticValue label="Average" value={statistics.pm10.average} />
+            <StatisticValue label="Maximum" value={statistics.pm10.maximum} />
+          </div>
+        </article>
+      </div>
 
       <div className="history-chart-stage">
         {history.status === 'loading' ? (
           <div className="history-chart-state">
             <strong>Loading historical observations</strong>
-            <p>Requesting the 24-hour deterministic series.</p>
+            <p>
+              Requesting {selectedRange} series · {activeRange.description}.
+            </p>
           </div>
         ) : null}
 
@@ -244,16 +365,19 @@ export function SensorHistoryChart({
               : 'history-chart-canvas'
           }
           role="img"
-          aria-label={`PM2.5 and PM10 history for ${stationName}`}
+          aria-label={`PM2.5 and PM10 ${selectedRange} history for ${stationName}`}
         />
       </div>
 
       <footer>
         <span>
-          Source: <strong>AIRSIM-DETERMINISTIC-V1</strong>
+          Range: <strong>{selectedRange}</strong> · {activeRange.description}
         </span>
         <span>
-          Interval: <strong>60 minutes · 25 points</strong>
+          Points: <strong>{history.points.length || '—'}</strong>
+        </span>
+        <span>
+          Source: <strong>AIRSIM-DETERMINISTIC-V1</strong>
         </span>
       </footer>
     </section>
