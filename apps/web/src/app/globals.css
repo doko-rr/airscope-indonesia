@@ -5051,3 +5051,95 @@ body {
   }
 }
 /* AIRSCOPE_OVERVIEW_MAP_HEIGHT_FIX_END */
+
+/* AIRSCOPE_ALERTS_ROUTE_STAGE1_START */
+.alerts-page-header {
+  display: flex;
+  min-height: 146px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 26px 28px 22px;
+  border-bottom: 1px solid var(--ink);
+  background: var(--canvas);
+}
+
+.alerts-page-header > div {
+  display: grid;
+  max-width: 760px;
+  gap: 8px;
+}
+
+.alerts-page-header span,
+.alerts-page-header small,
+.alerts-empty-state > span {
+  color: var(--muted);
+  font: 9px/1 monospace;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.alerts-page-header h1 {
+  margin: 0;
+  font:
+    700 34px/1 Arial,
+    sans-serif;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.alerts-page-header p,
+.alerts-empty-state p {
+  margin: 0;
+  color: var(--muted);
+  font: 11px/1.55 monospace;
+}
+
+.alerts-page-header > strong {
+  display: grid;
+  min-width: 110px;
+  justify-items: end;
+  gap: 7px;
+  font: 700 12px/1 monospace;
+  text-transform: uppercase;
+}
+
+.alerts-empty-state {
+  display: grid;
+  min-height: 330px;
+  place-content: center;
+  justify-items: center;
+  gap: 13px;
+  padding: 40px 28px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--panel);
+  text-align: center;
+}
+
+.alerts-empty-state h2 {
+  max-width: 700px;
+  margin: 0;
+  font: 700 19px/1.25 monospace;
+  text-transform: uppercase;
+}
+
+.alerts-empty-state p {
+  max-width: 720px;
+}
+
+.alerts-empty-state a {
+  margin-top: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  background: var(--canvas);
+  font: 700 9px/1 monospace;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.alerts-empty-state a:hover {
+  color: #fff;
+  background: var(--ink);
+}
+/* AIRSCOPE_ALERTS_ROUTE_STAGE1_END */

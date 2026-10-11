@@ -172,3 +172,6 @@ apps/web/.next/
 *.before-overview-map-height-*
 # Environment files
 .env.*
+
+# Local Alerts route backups
+*.before-alerts-route-*
