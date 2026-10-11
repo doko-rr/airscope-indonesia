@@ -322,11 +322,11 @@ export function SensorDirectory() {
             <b>04</b>
             <i>Comparison</i>
           </span>
-          <span>
+          <Link href="/alerts">
             <b>05</b>
-            <i>Alerts</i>
-            <em>{String(counts.advisory).padStart(2, '0')}</em>
-          </span>
+            <span>Alerts</span>
+            <em>{String(totalActiveIssues).padStart(2, '0')}</em>
+          </Link>
           <span>
             <b>06</b>
             <i>Devices</i>
