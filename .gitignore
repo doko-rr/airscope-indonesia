@@ -164,12 +164,11 @@ temp/
 # Next.js generated files
 apps/web/.next/
 # Local logs
-
 # Local ESLint cleanup backups
 *.before-eslint-cleanup-*
-
 # Local Overview shell restore backups
 *.before-overview-shell-restore-*
-
 # Local Overview map-height backups
 *.before-overview-map-height-*
+# Environment files
+.env.*
