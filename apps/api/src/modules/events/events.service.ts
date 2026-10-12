@@ -1,4 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
+import type { AlertEvent } from '../../generated/prisma/client';
+import { PrismaService } from '../../database/prisma.service';
 import { SensorsService } from '../sensors/sensors.service';
 import type {
   SensorMeasurement,
@@ -11,25 +14,99 @@ const STALE_AFTER_MINUTES = 20;
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly sensorsService: SensorsService) {}
+  constructor(
+    private readonly sensorsService: SensorsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  findAll(referenceDate = new Date()): SensorEvent[] {
-    return this.sensorsService
-      .findAll()
-      .flatMap((station) => this.deriveStationEvents(station, referenceDate))
-      .sort((left, right) => {
-        const severityOrder = { CRITICAL: 0, WARNING: 1, CAUTION: 2, INFO: 3 };
-        return (
-          severityOrder[left.severity] - severityOrder[right.severity] ||
-          right.occurredAt.localeCompare(left.occurredAt) ||
-          left.sensorCode.localeCompare(right.sensorCode)
-        );
-      });
+  async findAll(referenceDate = new Date()): Promise<SensorEvent[]> {
+    const stations = this.sensorsService.findAll();
+    const derived = stations.flatMap((station) =>
+      this.deriveStationEvents(station, referenceDate),
+    );
+
+    await this.synchronizeEvents(
+      derived,
+      stations.map((station) => station.code),
+    );
+
+    const stored = await this.prisma.alertEvent.findMany({
+      orderBy: [{ occurredAt: 'desc' }, { sensorCode: 'asc' }],
+    });
+
+    return stored.map((event) => this.toSensorEvent(event));
   }
 
-  findBySensorCode(code: string, referenceDate = new Date()): SensorEvent[] {
+  async findBySensorCode(
+    code: string,
+    referenceDate = new Date(),
+  ): Promise<SensorEvent[]> {
     const station = this.sensorsService.findByCode(code);
-    return this.deriveStationEvents(station, referenceDate);
+    const derived = this.deriveStationEvents(station, referenceDate);
+
+    await this.synchronizeEvents(derived, [station.code]);
+
+    const stored = await this.prisma.alertEvent.findMany({
+      where: { sensorCode: station.code },
+      orderBy: { occurredAt: 'desc' },
+    });
+
+    return stored.map((event) => this.toSensorEvent(event));
+  }
+
+  private async synchronizeEvents(
+    derived: SensorEvent[],
+    sensorCodes: string[],
+  ): Promise<void> {
+    const activeFingerprints = derived.map((event) =>
+      this.eventFingerprint(event.sensorCode, event.type),
+    );
+
+    await this.prisma.$transaction(async (transaction) => {
+      for (const event of derived) {
+        const fingerprint = this.eventFingerprint(event.sensorCode, event.type);
+
+        await transaction.alertEvent.upsert({
+          where: { fingerprint },
+          create: {
+            id: randomUUID(),
+            fingerprint,
+            sensorCode: event.sensorCode,
+            type: event.type,
+            severity: event.severity,
+            status: 'ACTIVE',
+            title: event.title,
+            detail: event.detail,
+            occurredAt: new Date(event.occurredAt),
+            resolvedAt: null,
+            source: event.source,
+          },
+          update: {
+            severity: event.severity,
+            status: 'ACTIVE',
+            title: event.title,
+            detail: event.detail,
+            occurredAt: new Date(event.occurredAt),
+            resolvedAt: null,
+            source: event.source,
+          },
+        });
+      }
+
+      await transaction.alertEvent.updateMany({
+        where: {
+          sensorCode: { in: sensorCodes },
+          status: 'ACTIVE',
+          ...(activeFingerprints.length
+            ? { fingerprint: { notIn: activeFingerprints } }
+            : {}),
+        },
+        data: {
+          status: 'RESOLVED',
+          resolvedAt: new Date(),
+        },
+      });
+    });
   }
 
   private deriveStationEvents(
@@ -42,11 +119,9 @@ export class EventsService {
       referenceDate,
     );
 
-    // Communication failures take precedence so one root cause creates one
-    // active event. Offline supersedes stale; stale supersedes advisory.
     if (station.status === 'OFFLINE') {
       return [
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'STATION_OFFLINE',
@@ -59,7 +134,7 @@ export class EventsService {
 
     if (!Number.isFinite(ageMinutes) || ageMinutes > STALE_AFTER_MINUTES) {
       return [
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'TELEMETRY_STALE',
@@ -74,7 +149,7 @@ export class EventsService {
 
     if (station.status === 'WARNING') {
       events.push(
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'AIR_QUALITY_ADVISORY',
@@ -87,7 +162,7 @@ export class EventsService {
 
     if (ageMinutes > DELAYED_AFTER_MINUTES) {
       events.push(
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'TELEMETRY_DELAYED',
@@ -99,6 +174,13 @@ export class EventsService {
     }
 
     return events;
+  }
+
+  private eventFingerprint(
+    sensorCode: string,
+    type: SensorEvent['type'],
+  ): string {
+    return `${sensorCode}:${type}`;
   }
 
   private measurementAgeMinutes(
@@ -113,7 +195,7 @@ export class EventsService {
     );
   }
 
-  private createEvent(
+  private createDerivedEvent(
     station: SensorStation,
     measurement: SensorMeasurement,
     type: SensorEvent['type'],
@@ -121,10 +203,8 @@ export class EventsService {
     title: string,
     detail: string,
   ): SensorEvent {
-    const bucket = measurement.observedAt.replace(/[^0-9]/g, '').slice(0, 12);
-
     return {
-      id: `${station.code}-${type}-${bucket}`,
+      id: this.eventFingerprint(station.code, type),
       sensorCode: station.code,
       type,
       severity,
@@ -132,8 +212,29 @@ export class EventsService {
       title,
       detail,
       occurredAt: measurement.observedAt,
+      acknowledgedAt: null,
+      acknowledgedBy: null,
+      acknowledgmentNote: null,
       resolvedAt: null,
       source: 'DERIVED_SIMULATION',
+    };
+  }
+
+  private toSensorEvent(event: AlertEvent): SensorEvent {
+    return {
+      id: event.id,
+      sensorCode: event.sensorCode,
+      type: event.type as SensorEvent['type'],
+      severity: event.severity as SensorEvent['severity'],
+      status: event.status as SensorEvent['status'],
+      title: event.title,
+      detail: event.detail,
+      occurredAt: event.occurredAt.toISOString(),
+      acknowledgedAt: event.acknowledgedAt?.toISOString() ?? null,
+      acknowledgedBy: event.acknowledgedBy,
+      acknowledgmentNote: event.acknowledgmentNote,
+      resolvedAt: event.resolvedAt?.toISOString() ?? null,
+      source: event.source as SensorEvent['source'],
     };
   }
 }
