@@ -172,21 +172,22 @@ apps/web/.next/
 *.before-overview-map-height-*
 # Environment files
 .env.*
-
 # Local Alerts route backups
 *.before-alerts-route-*
-
 # Local Alerts Stage 2 backups
 *.before-alerts-stage2-*
-
 # Local Alerts Stage 3 backups
 *.before-alerts-stage3-*
-
 # Local Alerts Stage 4 backups
 *.before-alerts-stage4-*
-
 # Local Event Log Stage 1 backups
 *.before-event-log-stage1-*
-
 # Local Event Log Stage 2 backups
 *.before-event-log-stage2-*
+# Prisma SQLite development database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+# Local Alert Persistence Stage 1 backups
+*.before-alert-persistence-stage1-*

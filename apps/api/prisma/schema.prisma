@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model AlertEvent {
+  id                 String    @id
+  fingerprint        String    @unique
+  sensorCode         String
+  type               String
+  severity           String
+  status             String    @default("ACTIVE")
+  title              String
+  detail             String
+  occurredAt         DateTime
+  acknowledgedAt     DateTime?
+  acknowledgedBy     String?
+  acknowledgmentNote String?
+  resolvedAt         DateTime?
+  source             String    @default("DERIVED_SIMULATION")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([sensorCode, occurredAt])
+  @@index([status, severity])
+  @@index([type, status])
+}
