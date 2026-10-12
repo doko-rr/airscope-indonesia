@@ -6,7 +6,7 @@ const navigation = [
   ['02', 'Sensors', '/sensors'],
   ['03', 'Satellite', '#'],
   ['04', 'Comparison', '#'],
-  ['05', 'Alerts', '#'],
+  ['05', 'Alerts', '/alerts'],
   ['06', 'Devices', '#'],
   ['07', 'Reports', '#'],
   ['08', 'Settings', '#'],
