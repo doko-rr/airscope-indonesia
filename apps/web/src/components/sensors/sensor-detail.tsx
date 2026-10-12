@@ -136,8 +136,6 @@ export function SensorDetail() {
   }, [code, refreshRevision]);
 
   useEffect(() => {
-    if (activeTab !== 'events') return;
-
     let active = true;
     setEventState({ status: 'loading' });
 
@@ -159,7 +157,7 @@ export function SensorDetail() {
     return () => {
       active = false;
     };
-  }, [activeTab, code, eventRevision]);
+  }, [code, eventRevision, refreshRevision]);
 
   if (state.status === 'loading') {
     return (
@@ -243,7 +241,9 @@ export function SensorDetail() {
             {tab === 'overview'
               ? 'Overview'
               : tab === 'events'
-                ? `Event log ${events.length}`
+                ? eventState.status === 'ready'
+                  ? `Event log ${events.length}`
+                  : 'Event log …'
                 : 'Settings'}
           </button>
         ))}
