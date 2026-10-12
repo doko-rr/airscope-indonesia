@@ -184,3 +184,6 @@ apps/web/.next/
 
 # Local Alerts Stage 4 backups
 *.before-alerts-stage4-*
+
+# Local Event Log Stage 1 backups
+*.before-event-log-stage1-*
