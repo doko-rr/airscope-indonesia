@@ -187,3 +187,6 @@ apps/web/.next/
 
 # Local Event Log Stage 1 backups
 *.before-event-log-stage1-*
+
+# Local Event Log Stage 2 backups
+*.before-event-log-stage2-*
