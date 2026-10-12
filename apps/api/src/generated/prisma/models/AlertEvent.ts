@@ -38,6 +38,8 @@ export type AlertEventMinAggregateOutputType = {
   acknowledgedBy: string | null
   acknowledgmentNote: string | null
   resolvedAt: Date | null
+  resolvedBy: string | null
+  resolutionNote: string | null
   source: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -57,6 +59,8 @@ export type AlertEventMaxAggregateOutputType = {
   acknowledgedBy: string | null
   acknowledgmentNote: string | null
   resolvedAt: Date | null
+  resolvedBy: string | null
+  resolutionNote: string | null
   source: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -76,6 +80,8 @@ export type AlertEventCountAggregateOutputType = {
   acknowledgedBy: number
   acknowledgmentNote: number
   resolvedAt: number
+  resolvedBy: number
+  resolutionNote: number
   source: number
   createdAt: number
   updatedAt: number
@@ -97,6 +103,8 @@ export type AlertEventMinAggregateInputType = {
   acknowledgedBy?: true
   acknowledgmentNote?: true
   resolvedAt?: true
+  resolvedBy?: true
+  resolutionNote?: true
   source?: true
   createdAt?: true
   updatedAt?: true
@@ -116,6 +124,8 @@ export type AlertEventMaxAggregateInputType = {
   acknowledgedBy?: true
   acknowledgmentNote?: true
   resolvedAt?: true
+  resolvedBy?: true
+  resolutionNote?: true
   source?: true
   createdAt?: true
   updatedAt?: true
@@ -135,6 +145,8 @@ export type AlertEventCountAggregateInputType = {
   acknowledgedBy?: true
   acknowledgmentNote?: true
   resolvedAt?: true
+  resolvedBy?: true
+  resolutionNote?: true
   source?: true
   createdAt?: true
   updatedAt?: true
@@ -227,6 +239,8 @@ export type AlertEventGroupByOutputType = {
   acknowledgedBy: string | null
   acknowledgmentNote: string | null
   resolvedAt: Date | null
+  resolvedBy: string | null
+  resolutionNote: string | null
   source: string
   createdAt: Date
   updatedAt: Date
@@ -267,6 +281,8 @@ export type AlertEventWhereInput = {
   acknowledgedBy?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
   acknowledgmentNote?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
   resolvedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
+  resolvedBy?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
+  resolutionNote?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
   source?: Prisma.StringFilter<"AlertEvent"> | string
   createdAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
@@ -286,6 +302,8 @@ export type AlertEventOrderByWithRelationInput = {
   acknowledgedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   acknowledgmentNote?: Prisma.SortOrderInput | Prisma.SortOrder
   resolvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  resolvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  resolutionNote?: Prisma.SortOrderInput | Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -308,6 +326,8 @@ export type AlertEventWhereUniqueInput = Prisma.AtLeast<{
   acknowledgedBy?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
   acknowledgmentNote?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
   resolvedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
+  resolvedBy?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
+  resolutionNote?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
   source?: Prisma.StringFilter<"AlertEvent"> | string
   createdAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
@@ -327,6 +347,8 @@ export type AlertEventOrderByWithAggregationInput = {
   acknowledgedBy?: Prisma.SortOrderInput | Prisma.SortOrder
   acknowledgmentNote?: Prisma.SortOrderInput | Prisma.SortOrder
   resolvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  resolvedBy?: Prisma.SortOrderInput | Prisma.SortOrder
+  resolutionNote?: Prisma.SortOrderInput | Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -352,6 +374,8 @@ export type AlertEventScalarWhereWithAggregatesInput = {
   acknowledgedBy?: Prisma.StringNullableWithAggregatesFilter<"AlertEvent"> | string | null
   acknowledgmentNote?: Prisma.StringNullableWithAggregatesFilter<"AlertEvent"> | string | null
   resolvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AlertEvent"> | Date | string | null
+  resolvedBy?: Prisma.StringNullableWithAggregatesFilter<"AlertEvent"> | string | null
+  resolutionNote?: Prisma.StringNullableWithAggregatesFilter<"AlertEvent"> | string | null
   source?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"AlertEvent"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"AlertEvent"> | Date | string
@@ -371,6 +395,8 @@ export type AlertEventCreateInput = {
   acknowledgedBy?: string | null
   acknowledgmentNote?: string | null
   resolvedAt?: Date | string | null
+  resolvedBy?: string | null
+  resolutionNote?: string | null
   source?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -390,6 +416,8 @@ export type AlertEventUncheckedCreateInput = {
   acknowledgedBy?: string | null
   acknowledgmentNote?: string | null
   resolvedAt?: Date | string | null
+  resolvedBy?: string | null
+  resolutionNote?: string | null
   source?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -409,6 +437,8 @@ export type AlertEventUpdateInput = {
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   acknowledgmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -428,6 +458,8 @@ export type AlertEventUncheckedUpdateInput = {
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   acknowledgmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -447,6 +479,8 @@ export type AlertEventCreateManyInput = {
   acknowledgedBy?: string | null
   acknowledgmentNote?: string | null
   resolvedAt?: Date | string | null
+  resolvedBy?: string | null
+  resolutionNote?: string | null
   source?: string
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -466,6 +500,8 @@ export type AlertEventUpdateManyMutationInput = {
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   acknowledgmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -485,6 +521,8 @@ export type AlertEventUncheckedUpdateManyInput = {
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   acknowledgmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resolvedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -504,6 +542,8 @@ export type AlertEventCountOrderByAggregateInput = {
   acknowledgedBy?: Prisma.SortOrder
   acknowledgmentNote?: Prisma.SortOrder
   resolvedAt?: Prisma.SortOrder
+  resolvedBy?: Prisma.SortOrder
+  resolutionNote?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -523,6 +563,8 @@ export type AlertEventMaxOrderByAggregateInput = {
   acknowledgedBy?: Prisma.SortOrder
   acknowledgmentNote?: Prisma.SortOrder
   resolvedAt?: Prisma.SortOrder
+  resolvedBy?: Prisma.SortOrder
+  resolutionNote?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -542,6 +584,8 @@ export type AlertEventMinOrderByAggregateInput = {
   acknowledgedBy?: Prisma.SortOrder
   acknowledgmentNote?: Prisma.SortOrder
   resolvedAt?: Prisma.SortOrder
+  resolvedBy?: Prisma.SortOrder
+  resolutionNote?: Prisma.SortOrder
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -579,6 +623,8 @@ export type AlertEventSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   acknowledgedBy?: boolean
   acknowledgmentNote?: boolean
   resolvedAt?: boolean
+  resolvedBy?: boolean
+  resolutionNote?: boolean
   source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -598,6 +644,8 @@ export type AlertEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   acknowledgedBy?: boolean
   acknowledgmentNote?: boolean
   resolvedAt?: boolean
+  resolvedBy?: boolean
+  resolutionNote?: boolean
   source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -617,6 +665,8 @@ export type AlertEventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   acknowledgedBy?: boolean
   acknowledgmentNote?: boolean
   resolvedAt?: boolean
+  resolvedBy?: boolean
+  resolutionNote?: boolean
   source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -636,12 +686,14 @@ export type AlertEventSelectScalar = {
   acknowledgedBy?: boolean
   acknowledgmentNote?: boolean
   resolvedAt?: boolean
+  resolvedBy?: boolean
+  resolutionNote?: boolean
   source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AlertEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fingerprint" | "sensorCode" | "type" | "severity" | "status" | "title" | "detail" | "occurredAt" | "acknowledgedAt" | "acknowledgedBy" | "acknowledgmentNote" | "resolvedAt" | "source" | "createdAt" | "updatedAt", ExtArgs["result"]["alertEvent"]>
+export type AlertEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fingerprint" | "sensorCode" | "type" | "severity" | "status" | "title" | "detail" | "occurredAt" | "acknowledgedAt" | "acknowledgedBy" | "acknowledgmentNote" | "resolvedAt" | "resolvedBy" | "resolutionNote" | "source" | "createdAt" | "updatedAt", ExtArgs["result"]["alertEvent"]>
 
 export type $AlertEventPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AlertEvent"
@@ -660,6 +712,8 @@ export type $AlertEventPayload<ExtArgs extends runtime.Types.Extensions.Internal
     acknowledgedBy: string | null
     acknowledgmentNote: string | null
     resolvedAt: Date | null
+    resolvedBy: string | null
+    resolutionNote: string | null
     source: string
     createdAt: Date
     updatedAt: Date
@@ -1099,6 +1153,8 @@ export interface AlertEventFieldRefs {
   readonly acknowledgedBy: Prisma.FieldRef<"AlertEvent", 'String'>
   readonly acknowledgmentNote: Prisma.FieldRef<"AlertEvent", 'String'>
   readonly resolvedAt: Prisma.FieldRef<"AlertEvent", 'DateTime'>
+  readonly resolvedBy: Prisma.FieldRef<"AlertEvent", 'String'>
+  readonly resolutionNote: Prisma.FieldRef<"AlertEvent", 'String'>
   readonly source: Prisma.FieldRef<"AlertEvent", 'String'>
   readonly createdAt: Prisma.FieldRef<"AlertEvent", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"AlertEvent", 'DateTime'>

@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { AlertEvent } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { SensorsService } from '../sensors/sensors.service';
@@ -7,6 +11,7 @@ import type {
   SensorMeasurement,
   SensorStation,
 } from '../sensors/types/sensor.types';
+import type { EventActionDto } from './dto/event-action.dto';
 import type { SensorEvent } from './types/event.types';
 
 const DELAYED_AFTER_MINUTES = 10;
@@ -83,11 +88,9 @@ export class EventsService {
           },
           update: {
             severity: event.severity,
-            status: 'ACTIVE',
             title: event.title,
             detail: event.detail,
             occurredAt: new Date(event.occurredAt),
-            resolvedAt: null,
             source: event.source,
           },
         });
@@ -96,7 +99,7 @@ export class EventsService {
       await transaction.alertEvent.updateMany({
         where: {
           sensorCode: { in: sensorCodes },
-          status: 'ACTIVE',
+          status: { in: ['ACTIVE', 'ACKNOWLEDGED'] },
           ...(activeFingerprints.length
             ? { fingerprint: { notIn: activeFingerprints } }
             : {}),
@@ -107,6 +110,56 @@ export class EventsService {
         },
       });
     });
+  }
+
+  async acknowledge(id: string, action: EventActionDto): Promise<SensorEvent> {
+    const current = await this.findStoredEvent(id);
+
+    if (current.status === 'RESOLVED') {
+      throw new ConflictException('Resolved events cannot be acknowledged');
+    }
+
+    if (current.status === 'ACKNOWLEDGED') {
+      return this.toSensorEvent(current);
+    }
+
+    const updated = await this.prisma.alertEvent.update({
+      where: { id },
+      data: {
+        status: 'ACKNOWLEDGED',
+        acknowledgedAt: new Date(),
+        acknowledgedBy: action.operator,
+        acknowledgmentNote: action.note ?? null,
+      },
+    });
+
+    return this.toSensorEvent(updated);
+  }
+
+  async resolve(id: string, action: EventActionDto): Promise<SensorEvent> {
+    const current = await this.findStoredEvent(id);
+
+    if (current.status === 'RESOLVED') {
+      return this.toSensorEvent(current);
+    }
+
+    const updated = await this.prisma.alertEvent.update({
+      where: { id },
+      data: {
+        status: 'RESOLVED',
+        resolvedAt: new Date(),
+        resolvedBy: action.operator,
+        resolutionNote: action.note ?? null,
+      },
+    });
+
+    return this.toSensorEvent(updated);
+  }
+
+  private async findStoredEvent(id: string): Promise<AlertEvent> {
+    const event = await this.prisma.alertEvent.findUnique({ where: { id } });
+    if (!event) throw new NotFoundException(`Event ${id} was not found`);
+    return event;
   }
 
   private deriveStationEvents(
@@ -216,6 +269,8 @@ export class EventsService {
       acknowledgedBy: null,
       acknowledgmentNote: null,
       resolvedAt: null,
+      resolvedBy: null,
+      resolutionNote: null,
       source: 'DERIVED_SIMULATION',
     };
   }
@@ -234,6 +289,8 @@ export class EventsService {
       acknowledgedBy: event.acknowledgedBy,
       acknowledgmentNote: event.acknowledgmentNote,
       resolvedAt: event.resolvedAt?.toISOString() ?? null,
+      resolvedBy: event.resolvedBy,
+      resolutionNote: event.resolutionNote,
       source: event.source as SensorEvent['source'],
     };
   }

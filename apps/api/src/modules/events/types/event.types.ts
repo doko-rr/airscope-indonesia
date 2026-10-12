@@ -21,5 +21,7 @@ export interface SensorEvent {
   acknowledgedBy: string | null;
   acknowledgmentNote: string | null;
   resolvedAt: string | null;
+  resolvedBy: string | null;
+  resolutionNote: string | null;
   source: 'DERIVED_SIMULATION';
 }
