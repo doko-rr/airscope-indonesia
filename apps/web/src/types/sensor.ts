@@ -97,3 +97,36 @@ export interface SensorHistoryResponse {
     simulationModel: string;
   };
 }
+
+export type SensorEventSeverity = 'INFO' | 'CAUTION' | 'WARNING' | 'CRITICAL';
+
+export type SensorEventStatus = 'ACTIVE' | 'RESOLVED';
+
+export type SensorEventType =
+  | 'AIR_QUALITY_ADVISORY'
+  | 'STATION_OFFLINE'
+  | 'TELEMETRY_DELAYED'
+  | 'TELEMETRY_STALE'
+  | 'STATION_RECOVERED';
+
+export interface SensorEvent {
+  id: string;
+  sensorCode: string;
+  type: SensorEventType;
+  severity: SensorEventSeverity;
+  status: SensorEventStatus;
+  title: string;
+  detail: string;
+  occurredAt: string;
+  resolvedAt: string | null;
+  source: 'DERIVED_SIMULATION';
+}
+
+export interface SensorEventsResponse {
+  data: SensorEvent[];
+  metadata: {
+    count: number;
+    sensorCode: string;
+    source: 'DERIVED_SIMULATION';
+  };
+}

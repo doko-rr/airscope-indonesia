@@ -5414,3 +5414,91 @@ body {
   font: 700 9px/1 monospace;
 }
 /* AIRSCOPE_ALERTS_STAGE4_END */
+
+/* AIRSCOPE_EVENT_LOG_STAGE2_START */
+.sensor-event-item.is-caution {
+  box-shadow: inset 3px 0 0 #9b8534;
+}
+.sensor-event-item.is-caution > b {
+  color: #76601a;
+}
+.sensor-event-item.is-caution > b span {
+  background: #9b8534;
+}
+.sensor-event-item.is-info {
+  box-shadow: inset 3px 0 0 var(--healthy);
+}
+.sensor-event-item.is-info > b {
+  color: var(--healthy-dark);
+}
+.sensor-event-item.is-info > b span {
+  background: var(--healthy);
+}
+.sensor-event-item.is-resolved {
+  opacity: 0.62;
+  background: #efeee9;
+}
+.sensor-event-item div small {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted);
+  font: 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-state {
+  display: grid;
+  min-height: 230px;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 30px;
+  border: 1px solid var(--hairline);
+  border-top: 0;
+  background: var(--canvas);
+  text-align: center;
+}
+.sensor-event-state strong {
+  font: 700 14px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-state span {
+  max-width: 620px;
+  color: var(--muted);
+  font: 10px/1.5 monospace;
+}
+.sensor-event-state button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  color: var(--ink);
+  background: #fff;
+  font: 700 9px monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.sensor-event-state button:hover {
+  color: #fff;
+  background: var(--ink);
+}
+.sensor-event-state.is-error strong {
+  color: var(--critical);
+}
+.sensor-event-state.is-empty strong {
+  color: var(--healthy-dark);
+}
+.sensor-event-disclaimer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.sensor-event-disclaimer a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+.sensor-event-disclaimer a:hover {
+  text-decoration: underline;
+}
+/* AIRSCOPE_EVENT_LOG_STAGE2_END */

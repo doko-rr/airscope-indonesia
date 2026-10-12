@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { SensorHistoryChart } from '@/components/charts/sensor-history-chart';
-import type { StationWithMeasurement } from '@/types/sensor';
+import type {
+  SensorEvent,
+  SensorEventSeverity,
+  StationWithMeasurement,
+} from '@/types/sensor';
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
@@ -15,17 +19,12 @@ type DetailState =
   | { status: 'ready'; item: StationWithMeasurement };
 
 type DetailTab = 'overview' | 'events' | 'settings';
-type EventSeverity = 'INFO' | 'WARNING' | 'CRITICAL' | 'RECOVERED';
-type EventFilter = 'ALL' | EventSeverity;
+type EventFilter = 'ALL' | SensorEventSeverity;
 
-interface SensorEvent {
-  id: string;
-  timestamp: string;
-  severity: EventSeverity;
-  title: string;
-  detail: string;
-  source: string;
-}
+type EventState =
+  | { status: 'idle' | 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; events: SensorEvent[] };
 
 function unwrap<T>(payload: T | { data: T }): T {
   if (typeof payload === 'object' && payload !== null && 'data' in payload) {
@@ -75,91 +74,6 @@ function formatTime(value: string): string {
   }).format(new Date(value));
 }
 
-function offsetTime(value: string, minutes: number): string {
-  return new Date(new Date(value).getTime() - minutes * 60_000).toISOString();
-}
-
-function buildEvents(item: StationWithMeasurement): SensorEvent[] {
-  const { station, latest } = item;
-  const events: SensorEvent[] = [
-    {
-      id: 'observation',
-      timestamp: latest.observedAt,
-      severity: 'INFO',
-      title: 'Observation received',
-      detail: `PM2.5 ${formatNumber(latest.measurements.pm25UgM3)} µg/m³ · PM10 ${formatNumber(latest.measurements.pm10UgM3)} µg/m³ · quality ${latest.quality.label}`,
-      source: 'INGESTION',
-    },
-    {
-      id: 'heartbeat',
-      timestamp: offsetTime(latest.observedAt, 5),
-      severity: 'INFO',
-      title: 'Device heartbeat received',
-      detail: `Battery ${formatNumber(latest.device.batteryVoltage, 2)} V · signal ${latest.device.rssiDbm} dBm · ${latest.device.network}`,
-      source: 'DEVICE',
-    },
-  ];
-
-  if (station.status === 'WARNING' || latest.measurements.pm25UgM3 >= 40) {
-    events.push({
-      id: 'pm25-advisory',
-      timestamp: offsetTime(latest.observedAt, 20),
-      severity: 'WARNING',
-      title: 'PM2.5 advisory threshold exceeded',
-      detail: `Observed ${formatNumber(latest.measurements.pm25UgM3)} µg/m³ · configured advisory threshold 40,0 µg/m³`,
-      source: 'RULE ENGINE',
-    });
-  }
-
-  if (latest.device.rssiDbm <= -90) {
-    events.push({
-      id: 'weak-signal',
-      timestamp: offsetTime(latest.observedAt, 35),
-      severity: 'WARNING',
-      title: 'Weak cellular signal',
-      detail: `Signal ${latest.device.rssiDbm} dBm · warning threshold -90 dBm`,
-      source: 'DEVICE',
-    });
-  } else {
-    events.push({
-      id: 'signal-recovered',
-      timestamp: offsetTime(latest.observedAt, 45),
-      severity: 'RECOVERED',
-      title: 'Signal quality within operating range',
-      detail: `Current signal ${latest.device.rssiDbm} dBm`,
-      source: 'DEVICE',
-    });
-  }
-
-  if (latest.device.batteryVoltage < 3.6) {
-    events.push({
-      id: 'battery-low',
-      timestamp: offsetTime(latest.observedAt, 60),
-      severity: 'CRITICAL',
-      title: 'Low battery voltage',
-      detail: `Battery ${formatNumber(latest.device.batteryVoltage, 2)} V · critical threshold 3,60 V`,
-      source: 'DEVICE',
-    });
-  }
-
-  if (latest.quality.label !== 'GOOD') {
-    events.push({
-      id: 'quality',
-      timestamp: offsetTime(latest.observedAt, 15),
-      severity: 'WARNING',
-      title: 'Observation quality degraded',
-      detail: `Quality ${latest.quality.label} · score ${formatNumber(latest.quality.score)}%`,
-      source: 'QUALITY ENGINE',
-    });
-  }
-
-  return events.sort(
-    (first, second) =>
-      new Date(second.timestamp).getTime() -
-      new Date(first.timestamp).getTime(),
-  );
-}
-
 function MetricCard({
   label,
   value,
@@ -197,6 +111,8 @@ export function SensorDetail() {
   const [state, setState] = useState<DetailState>({ status: 'loading' });
   const [refreshRevision, setRefreshRevision] = useState(0);
   const [eventFilter, setEventFilter] = useState<EventFilter>('ALL');
+  const [eventState, setEventState] = useState<EventState>({ status: 'idle' });
+  const [eventRevision, setEventRevision] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -219,6 +135,30 @@ export function SensorDetail() {
     };
   }, [code, refreshRevision]);
 
+  useEffect(() => {
+    let active = true;
+    setEventState({ status: 'loading' });
+
+    getJson<SensorEvent[]>(`/sensors/${encodeURIComponent(code)}/events`)
+      .then((events) => {
+        if (active) setEventState({ status: 'ready', events });
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setEventState({
+          status: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Event Log could not be loaded.',
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [code, eventRevision, refreshRevision]);
+
   if (state.status === 'loading') {
     return (
       <div className="sensor-detail-state">
@@ -240,7 +180,7 @@ export function SensorDetail() {
   const { station, latest } = state.item;
   const status = station.status === 'WARNING' ? 'ADVISORY' : station.status;
   const advisory = status === 'ADVISORY';
-  const events = buildEvents(state.item);
+  const events = eventState.status === 'ready' ? eventState.events : [];
   const visibleEvents =
     eventFilter === 'ALL'
       ? events
@@ -301,7 +241,9 @@ export function SensorDetail() {
             {tab === 'overview'
               ? 'Overview'
               : tab === 'events'
-                ? `Event log ${events.length}`
+                ? eventState.status === 'ready'
+                  ? `Event log ${events.length}`
+                  : 'Event log …'
                 : 'Settings'}
           </button>
         ))}
@@ -443,16 +385,19 @@ export function SensorDetail() {
             <div>
               <span>Operational chronology</span>
               <h2>Event Log</h2>
-              <p>Derived from current simulated telemetry and station state.</p>
+              <p>
+                Derived by the Event Log backend from station state and
+                telemetry.
+              </p>
             </div>
             <div className="sensor-event-filters">
               {(
                 [
                   'ALL',
                   'INFO',
+                  'CAUTION',
                   'WARNING',
                   'CRITICAL',
-                  'RECOVERED',
                 ] as EventFilter[]
               ).map((filter) => (
                 <button
@@ -466,27 +411,75 @@ export function SensorDetail() {
               ))}
             </div>
           </header>
-          <div className="sensor-event-list">
-            {visibleEvents.map((event) => (
-              <article
-                key={event.id}
-                className={`sensor-event-item is-${event.severity.toLowerCase()}`}
+
+          {eventState.status === 'idle' || eventState.status === 'loading' ? (
+            <div className="sensor-event-state">
+              <strong>Loading Event Log</strong>
+              <span>Requesting operational events for {station.code}.</span>
+            </div>
+          ) : null}
+
+          {eventState.status === 'error' ? (
+            <div className="sensor-event-state is-error">
+              <strong>Event Log unavailable</strong>
+              <span>{eventState.message}</span>
+              <button
+                type="button"
+                onClick={() => setEventRevision((value) => value + 1)}
               >
-                <time>{formatTime(event.timestamp)} WIB</time>
-                <b>
-                  <span aria-hidden="true" />
-                  {event.severity}
-                </b>
-                <div>
-                  <strong>{event.title}</strong>
-                  <p>{event.detail}</p>
-                </div>
-                <small>{event.source}</small>
-              </article>
-            ))}
-          </div>
+                Retry
+              </button>
+            </div>
+          ) : null}
+
+          {eventState.status === 'ready' && visibleEvents.length === 0 ? (
+            <div className="sensor-event-state is-empty">
+              <strong>No events recorded</strong>
+              <span>
+                No active operational events match the current filter for this
+                station.
+              </span>
+              {eventFilter !== 'ALL' ? (
+                <button type="button" onClick={() => setEventFilter('ALL')}>
+                  Clear filter
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          {eventState.status === 'ready' && visibleEvents.length > 0 ? (
+            <div className="sensor-event-list">
+              {visibleEvents.map((event) => (
+                <article
+                  key={event.id}
+                  className={`sensor-event-item is-${event.severity.toLowerCase()}${
+                    event.status === 'RESOLVED' ? ' is-resolved' : ''
+                  }`}
+                >
+                  <time>{formatTime(event.occurredAt)} WIB</time>
+                  <b>
+                    <span aria-hidden="true" />
+                    {event.severity}
+                  </b>
+                  <div>
+                    <strong>{event.title}</strong>
+                    <p>{event.detail}</p>
+                    <small>{event.type.replaceAll('_', ' ')}</small>
+                  </div>
+                  <small>
+                    {event.status} · {event.source.replaceAll('_', ' ')}
+                  </small>
+                </article>
+              ))}
+            </div>
+          ) : null}
+
           <footer className="sensor-event-disclaimer">
-            Simulation-derived events · no persistent event backend is connected
+            Backend-derived simulation events · persistence and acknowledgment
+            are planned for the next stage
+            <Link href={`/alerts?q=${encodeURIComponent(station.code)}`}>
+              View in Alerts →
+            </Link>
           </footer>
         </section>
       ) : null}
