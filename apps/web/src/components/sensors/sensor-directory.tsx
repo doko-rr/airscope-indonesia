@@ -175,10 +175,23 @@ export function SensorDirectory() {
     [stations],
   );
 
-  const totalActiveIssues =
-    activeIssueCounts.advisory +
-    activeIssueCounts.delayed +
-    activeIssueCounts.stale;
+  const totalActiveIssues = useMemo(
+    () =>
+      stations.reduce((total, item) => {
+        const stationStatus = normalizedStatus(item);
+        const telemetryState = communicationState(item.latest.observedAt);
+
+        if (stationStatus === 'OFFLINE') return total + 1;
+        if (telemetryState === 'STALE') return total + 1;
+
+        return (
+          total +
+          (stationStatus === 'ADVISORY' ? 1 : 0) +
+          (telemetryState === 'DELAYED' ? 1 : 0)
+        );
+      }, 0),
+    [stations],
+  );
 
   function toggleIssueFilter(value: Exclude<IssueFilter, 'ALL'>) {
     setIssueFilter((current) => (current === value ? 'ALL' : value));
@@ -456,7 +469,9 @@ export function SensorDirectory() {
                     count === 0 ? ' is-zero' : ''
                   }`}
                   aria-pressed={issueFilter === value}
-                  onClick={() => toggleIssueFilter(value)}
+                  onClick={() =>
+                    router.push(`/alerts?type=${value.toLowerCase()}`)
+                  }
                 >
                   <i aria-hidden="true" />
                   <span>{label}</span>
