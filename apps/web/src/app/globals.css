@@ -5304,10 +5304,9 @@ body {
 /* AIRSCOPE_ALERTS_STAGE3_START */
 .alerts-filter-bar {
   display: grid;
-  grid-template-columns: minmax(300px, 1.5fr) repeat(
-      3,
-      minmax(150px, 0.75fr)
-    ) auto;
+  grid-template-columns:
+    minmax(300px, 1.5fr) repeat(3, minmax(150px, 0.75fr))
+    auto;
   align-items: end;
   gap: 12px;
   padding: 14px 20px;
@@ -5371,3 +5370,47 @@ body {
   }
 }
 /* AIRSCOPE_ALERTS_STAGE3_END */
+
+/* AIRSCOPE_ALERTS_STAGE4_START */
+.alerts-severity-summary > button {
+  display: grid;
+  min-height: 126px;
+  align-content: center;
+  gap: 8px;
+  padding: 18px 22px;
+  border: 0;
+  border-right: 1px solid var(--hairline);
+  border-radius: 0;
+  color: var(--ink);
+  background: var(--canvas);
+  text-align: left;
+  cursor: pointer;
+}
+
+.alerts-severity-summary > button:last-child {
+  border-right: 0;
+}
+
+.alerts-severity-summary > button:hover,
+.alerts-severity-summary > button[aria-pressed='true'] {
+  background: #ecefe9;
+}
+
+.alerts-severity-summary > button[aria-pressed='true'] {
+  box-shadow: inset 0 -4px 0 var(--healthy);
+}
+
+.alerts-severity-summary > button.is-total:hover {
+  background: #efeee8;
+}
+
+.sensor-active-issues-strip > button {
+  position: relative;
+}
+
+.sensor-active-issues-strip > button::after {
+  color: var(--muted);
+  content: '↗';
+  font: 700 9px/1 monospace;
+}
+/* AIRSCOPE_ALERTS_STAGE4_END */

@@ -221,26 +221,46 @@ export function AlertsDirectory({
         className="alerts-severity-summary"
         aria-label="Alert severity summary"
       >
-        <article className="is-total">
+        <button
+          type="button"
+          className="is-total"
+          onClick={clearFilters}
+          aria-label="Show all active alerts"
+        >
           <span>Active alerts</span>
           <strong>{alerts.length}</strong>
           <small>Across {stations.length} stations</small>
-        </article>
-        <article className="is-critical">
+        </button>
+        <button
+          type="button"
+          className="is-critical"
+          onClick={() => updateParam('severity', 'CRITICAL')}
+          aria-pressed={severity === 'CRITICAL'}
+        >
           <span>Critical</span>
           <strong>{counts.critical}</strong>
           <small>Offline or stale</small>
-        </article>
-        <article className="is-warning">
+        </button>
+        <button
+          type="button"
+          className="is-warning"
+          onClick={() => updateParam('severity', 'WARNING')}
+          aria-pressed={severity === 'WARNING'}
+        >
           <span>Warning</span>
           <strong>{counts.warning}</strong>
           <small>Air-quality advisory</small>
-        </article>
-        <article className="is-caution">
+        </button>
+        <button
+          type="button"
+          className="is-caution"
+          onClick={() => updateParam('severity', 'CAUTION')}
+          aria-pressed={severity === 'CAUTION'}
+        >
           <span>Caution</span>
           <strong>{counts.caution}</strong>
           <small>Delayed telemetry</small>
-        </article>
+        </button>
       </section>
 
       <section className="alerts-filter-bar" aria-label="Alert filters">
