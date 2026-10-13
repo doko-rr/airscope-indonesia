@@ -5628,3 +5628,74 @@ body {
   }
 }
 /* AIRSCOPE_EVENT_ACTIONS_STAGE4_END */
+
+/* AIRSCOPE_ISSUE_CARDS_FINAL_START */
+
+/*
+ * Format final:
+ * - titik kiri
+ * - judul tepat tengah
+ * - angka kanan
+ * - tanpa panah
+ * - kartu tidak interaktif
+ */
+.sensor-active-issues-strip > button {
+  position: relative;
+  cursor: default;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Titik tetap di kiri. */
+.sensor-active-issues-strip > button > i {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+/* Judul tepat di tengah dan diperbesar setara ACTIVE ISSUES. */
+.sensor-active-issues-strip > button > span {
+  position: absolute;
+  top: 50%;
+  right: 48px;
+  left: 48px;
+  margin: 0;
+  transform: translateY(-50%);
+  color: var(--ink);
+  font: 700 12px/1.2 monospace;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Angka tetap di kanan dan sejajar secara vertikal. */
+.sensor-active-issues-strip > button > strong {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  left: auto;
+  margin: 0;
+  transform: translateY(-50%);
+  color: var(--ink);
+  font: 700 16px/1 monospace;
+  text-align: right;
+}
+
+/* Hapus seluruh tanda panah dari tiga kartu issue. */
+.sensor-active-issues-strip > button::after {
+  display: none;
+  content: none;
+}
+
+/* Jangan redupkan kartu yang jumlahnya nol. */
+.sensor-active-issues-strip > button:disabled,
+.sensor-active-issues-strip > button.is-zero {
+  color: inherit;
+  opacity: 1;
+  cursor: default;
+}
+
+/* AIRSCOPE_ISSUE_CARDS_FINAL_END */

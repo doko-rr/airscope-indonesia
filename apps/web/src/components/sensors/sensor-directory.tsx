@@ -468,10 +468,8 @@ export function SensorDirectory() {
                   className={`${tone}${issueFilter === value ? ' is-active' : ''}${
                     count === 0 ? ' is-zero' : ''
                   }`}
-                  aria-pressed={issueFilter === value}
-                  onClick={() =>
-                    router.push(`/alerts?type=${value.toLowerCase()}`)
-                  }
+                  disabled
+                  aria-disabled="true"
                 >
                   <i aria-hidden="true" />
                   <span>{label}</span>
