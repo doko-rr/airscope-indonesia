@@ -5699,3 +5699,126 @@ body {
 }
 
 /* AIRSCOPE_ISSUE_CARDS_FINAL_END */
+
+/* AIRSCOPE_EVENT_ACTION_COMPACT_FINAL_START */
+
+/* Kolom kanan dibuat kompak dan tidak menguasai kartu. */
+.sensor-event-item {
+  grid-template-columns: 170px 112px minmax(0, 1fr) 148px;
+  align-items: center;
+  column-gap: 18px;
+  padding: 16px 18px;
+}
+
+/* Status, sumber, dan tindakan menjadi satu kelompok kecil. */
+.sensor-event-operation {
+  display: flex;
+  width: 128px;
+  min-width: 0;
+  align-self: center;
+  justify-self: end;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
+}
+
+/* Badge status berada di tengah, tidak menempel garis atas. */
+.sensor-event-operation > .sensor-event-status {
+  position: static;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 6px 8px;
+  align-self: auto;
+  text-align: center;
+}
+
+/* Sumber data berada tepat di bawah status. */
+.sensor-event-operation > small {
+  width: 100%;
+  margin: 1px 0 5px;
+  align-self: auto;
+  color: #565d58;
+  font-size: 9px;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Tombol dibuat kompak dan konsisten. */
+.sensor-event-operation > button {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  margin: 0;
+  padding: 0 8px;
+  font-size: 9px;
+  text-align: center;
+}
+
+/* Footer tetap menjadi footer penuh, bukan bagian panel kanan. */
+.sensor-event-disclaimer {
+  clear: both;
+  width: auto;
+  min-height: 38px;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+/* Tablet. */
+@media (max-width: 1050px) {
+  .sensor-event-item {
+    grid-template-columns: 150px 105px minmax(0, 1fr);
+  }
+
+  .sensor-event-operation {
+    width: auto;
+    grid-column: 1 / -1;
+    justify-self: start;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .sensor-event-operation > .sensor-event-status {
+    width: auto;
+    min-width: 92px;
+  }
+
+  .sensor-event-operation > small {
+    width: auto;
+    margin: 0 8px 0 0;
+  }
+
+  .sensor-event-operation > button {
+    width: auto;
+    min-width: 108px;
+  }
+}
+
+/* Ponsel. */
+@media (max-width: 760px) {
+  .sensor-event-item {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-event-operation {
+    width: 100%;
+    grid-column: auto;
+    justify-self: stretch;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sensor-event-operation > .sensor-event-status,
+  .sensor-event-operation > small,
+  .sensor-event-operation > button {
+    width: 100%;
+  }
+}
+
+/* AIRSCOPE_EVENT_ACTION_COMPACT_FINAL_END */
