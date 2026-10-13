@@ -26,6 +26,12 @@ type EventState =
   | { status: 'error'; message: string }
   | { status: 'ready'; events: SensorEvent[] };
 
+type EventAction = 'acknowledge' | 'resolve';
+type MutationState =
+  | { status: 'idle' }
+  | { status: 'submitting' }
+  | { status: 'error'; message: string };
+
 function unwrap<T>(payload: T | { data: T }): T {
   if (typeof payload === 'object' && payload !== null && 'data' in payload) {
     return (payload as { data: T }).data;
@@ -38,6 +44,38 @@ async function getJson<T>(path: string): Promise<T> {
   if (!response.ok)
     throw new Error(`API request failed with HTTP ${response.status}`);
   return unwrap<T>((await response.json()) as T | { data: T });
+}
+
+async function mutateEvent(
+  eventId: string,
+  action: EventAction,
+  payload: { operator: string; note?: string },
+): Promise<SensorEvent> {
+  const response = await fetch(
+    `${API_URL}/events/${encodeURIComponent(eventId)}/${action}`,
+    {
+      method: 'PATCH',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      message?: string | string[];
+    } | null;
+    const message = Array.isArray(body?.message)
+      ? body.message.join(', ')
+      : body?.message;
+    throw new Error(
+      message ?? `Event action failed with HTTP ${response.status}`,
+    );
+  }
+
+  return unwrap<SensorEvent>(
+    (await response.json()) as SensorEvent | { data: SensorEvent },
+  );
 }
 
 async function loadStation(code: string): Promise<StationWithMeasurement> {
@@ -113,6 +151,13 @@ export function SensorDetail() {
   const [eventFilter, setEventFilter] = useState<EventFilter>('ALL');
   const [eventState, setEventState] = useState<EventState>({ status: 'idle' });
   const [eventRevision, setEventRevision] = useState(0);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [eventAction, setEventAction] = useState<EventAction | null>(null);
+  const [operator, setOperator] = useState('');
+  const [note, setNote] = useState('');
+  const [mutationState, setMutationState] = useState<MutationState>({
+    status: 'idle',
+  });
 
   useEffect(() => {
     let active = true;
@@ -185,6 +230,56 @@ export function SensorDetail() {
     eventFilter === 'ALL'
       ? events
       : events.filter((event) => event.severity === eventFilter);
+
+  function openEventAction(eventId: string, action: EventAction) {
+    setSelectedEventId(eventId);
+    setEventAction(action);
+    setOperator('');
+    setNote('');
+    setMutationState({ status: 'idle' });
+  }
+
+  function closeEventAction() {
+    setSelectedEventId(null);
+    setEventAction(null);
+    setOperator('');
+    setNote('');
+    setMutationState({ status: 'idle' });
+  }
+
+  async function submitEventAction() {
+    if (!selectedEventId || !eventAction) return;
+    if (operator.trim().length < 2) {
+      setMutationState({
+        status: 'error',
+        message: 'Operator must contain at least 2 characters.',
+      });
+      return;
+    }
+
+    if (
+      eventAction === 'resolve' &&
+      !window.confirm('Resolve this operational event?')
+    ) {
+      return;
+    }
+
+    setMutationState({ status: 'submitting' });
+    try {
+      await mutateEvent(selectedEventId, eventAction, {
+        operator: operator.trim(),
+        note: note.trim() || undefined,
+      });
+      closeEventAction();
+      setEventRevision((value) => value + 1);
+    } catch (error: unknown) {
+      setMutationState({
+        status: 'error',
+        message:
+          error instanceof Error ? error.message : 'Event action failed.',
+      });
+    }
+  }
 
   function changeTab(tab: DetailTab) {
     const query = tab === 'overview' ? '' : `?tab=${tab}`;
@@ -436,8 +531,7 @@ export function SensorDetail() {
             <div className="sensor-event-state is-empty">
               <strong>No events recorded</strong>
               <span>
-                No active operational events match the current filter for this
-                station.
+                No operational events match the current filter for this station.
               </span>
               {eventFilter !== 'ALL' ? (
                 <button type="button" onClick={() => setEventFilter('ALL')}>
@@ -449,34 +543,145 @@ export function SensorDetail() {
 
           {eventState.status === 'ready' && visibleEvents.length > 0 ? (
             <div className="sensor-event-list">
-              {visibleEvents.map((event) => (
-                <article
-                  key={event.id}
-                  className={`sensor-event-item is-${event.severity.toLowerCase()}${
-                    event.status === 'RESOLVED' ? ' is-resolved' : ''
-                  }`}
-                >
-                  <time>{formatTime(event.occurredAt)} WIB</time>
-                  <b>
-                    <span aria-hidden="true" />
-                    {event.severity}
-                  </b>
-                  <div>
-                    <strong>{event.title}</strong>
-                    <p>{event.detail}</p>
-                    <small>{event.type.replaceAll('_', ' ')}</small>
-                  </div>
-                  <small>
-                    {event.status} · {event.source.replaceAll('_', ' ')}
-                  </small>
-                </article>
-              ))}
+              {visibleEvents.map((event) => {
+                const actionOpen = selectedEventId === event.id;
+                return (
+                  <article
+                    key={event.id}
+                    className={`sensor-event-item is-${event.severity.toLowerCase()} is-${event.status.toLowerCase()}`}
+                  >
+                    <time>{formatTime(event.occurredAt)} WIB</time>
+                    <b>
+                      <span aria-hidden="true" />
+                      {event.severity}
+                    </b>
+                    <div className="sensor-event-copy">
+                      <strong>{event.title}</strong>
+                      <p>{event.detail}</p>
+                      <small>{event.type.replaceAll('_', ' ')}</small>
+
+                      {event.acknowledgedAt ? (
+                        <div className="sensor-event-audit">
+                          <b>Acknowledged</b>
+                          <span>
+                            {event.acknowledgedBy ?? 'Unknown operator'} ·{' '}
+                            {formatTime(event.acknowledgedAt)} WIB
+                          </span>
+                          {event.acknowledgmentNote ? (
+                            <p>{event.acknowledgmentNote}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {event.resolvedAt ? (
+                        <div className="sensor-event-audit is-resolution">
+                          <b>Resolved</b>
+                          <span>
+                            {event.resolvedBy ?? 'Unknown operator'} ·{' '}
+                            {formatTime(event.resolvedAt)} WIB
+                          </span>
+                          {event.resolutionNote ? (
+                            <p>{event.resolutionNote}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {actionOpen ? (
+                        <div className="sensor-event-action-panel">
+                          <strong>
+                            {eventAction === 'acknowledge'
+                              ? 'Acknowledge event'
+                              : 'Resolve event'}
+                          </strong>
+                          <label>
+                            <span>Operator</span>
+                            <input
+                              value={operator}
+                              onChange={(entry) =>
+                                setOperator(entry.target.value)
+                              }
+                              maxLength={80}
+                              autoFocus
+                            />
+                          </label>
+                          <label>
+                            <span>Note</span>
+                            <textarea
+                              value={note}
+                              onChange={(entry) => setNote(entry.target.value)}
+                              maxLength={500}
+                              rows={3}
+                            />
+                          </label>
+                          {mutationState.status === 'error' ? (
+                            <p className="sensor-event-mutation-error">
+                              {mutationState.message}
+                            </p>
+                          ) : null}
+                          <div>
+                            <button
+                              type="button"
+                              onClick={closeEventAction}
+                              disabled={mutationState.status === 'submitting'}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void submitEventAction()}
+                              disabled={mutationState.status === 'submitting'}
+                            >
+                              {mutationState.status === 'submitting'
+                                ? 'Saving…'
+                                : 'Confirm'}
+                            </button>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                    <aside className="sensor-event-operation">
+                      <b
+                        className={`sensor-event-status is-${event.status.toLowerCase()}`}
+                      >
+                        {event.status}
+                      </b>
+                      <small>{event.source.replaceAll('_', ' ')}</small>
+                      {event.status === 'ACTIVE' ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openEventAction(event.id, 'acknowledge')
+                            }
+                          >
+                            Acknowledge
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEventAction(event.id, 'resolve')}
+                          >
+                            Resolve
+                          </button>
+                        </>
+                      ) : null}
+                      {event.status === 'ACKNOWLEDGED' ? (
+                        <button
+                          type="button"
+                          onClick={() => openEventAction(event.id, 'resolve')}
+                        >
+                          Resolve
+                        </button>
+                      ) : null}
+                    </aside>
+                  </article>
+                );
+              })}
             </div>
           ) : null}
 
           <footer className="sensor-event-disclaimer">
-            Backend-derived simulation events · persistence and acknowledgment
-            are planned for the next stage
+            Persistent operational events · acknowledgment and resolution audit
+            enabled
             <Link href={`/alerts?q=${encodeURIComponent(station.code)}`}>
               View in Alerts →
             </Link>

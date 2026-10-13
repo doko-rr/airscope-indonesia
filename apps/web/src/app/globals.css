@@ -5502,3 +5502,129 @@ body {
   text-decoration: underline;
 }
 /* AIRSCOPE_EVENT_LOG_STAGE2_END */
+
+/* AIRSCOPE_EVENT_ACTIONS_STAGE4_START */
+.sensor-event-item.is-acknowledged {
+  background: #fff8e8;
+}
+.sensor-event-copy {
+  min-width: 0;
+}
+.sensor-event-operation {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+.sensor-event-operation > small {
+  color: var(--muted);
+  font: 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-operation > button,
+.sensor-event-action-panel button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font: 700 9px monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.sensor-event-operation > button:hover,
+.sensor-event-action-panel button:hover {
+  color: #fff;
+  background: var(--ink);
+}
+.sensor-event-operation button:disabled,
+.sensor-event-action-panel button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.sensor-event-status {
+  padding: 5px 7px;
+  border: 1px solid currentColor;
+  font: 700 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-status.is-active {
+  color: #8b4c00;
+}
+.sensor-event-status.is-acknowledged {
+  color: #5f531f;
+  background: #fff0b8;
+}
+.sensor-event-status.is-resolved {
+  color: var(--healthy-dark);
+  background: #e3ece4;
+}
+.sensor-event-audit {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 9px 10px;
+  border-left: 3px solid #9b8534;
+  background: #f8f4e5;
+}
+.sensor-event-audit.is-resolution {
+  border-left-color: var(--healthy);
+  background: #edf3ed;
+}
+.sensor-event-audit b {
+  font: 700 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-audit span,
+.sensor-event-audit p {
+  margin: 0;
+  color: var(--muted);
+  font: 9px/1.45 monospace;
+}
+.sensor-event-action-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--hairline);
+  background: #f3f1eb;
+}
+.sensor-event-action-panel > strong {
+  font: 700 10px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-action-panel label {
+  display: grid;
+  gap: 5px;
+}
+.sensor-event-action-panel label span {
+  color: var(--muted);
+  font: 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-action-panel input,
+.sensor-event-action-panel textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid #bdb8ad;
+  border-radius: 0;
+  color: var(--ink);
+  background: #fff;
+  font: 10px monospace;
+}
+.sensor-event-action-panel > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.sensor-event-mutation-error {
+  color: var(--critical) !important;
+  font-weight: 700 !important;
+}
+@media (max-width: 1050px) {
+  .sensor-event-operation {
+    justify-items: start;
+  }
+}
+/* AIRSCOPE_EVENT_ACTIONS_STAGE4_END */

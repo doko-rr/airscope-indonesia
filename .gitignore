@@ -197,3 +197,6 @@ apps/web/.next/
 
 # Local Alert Persistence Stage 3 backups
 *.before-alert-persistence-stage3-*
+
+# Local Alert Persistence Stage 4 backups
+*.before-alert-persistence-stage4-*
