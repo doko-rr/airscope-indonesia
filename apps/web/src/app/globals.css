@@ -5822,3 +5822,119 @@ body {
 }
 
 /* AIRSCOPE_EVENT_ACTION_COMPACT_FINAL_END */
+
+/* AIRSCOPE_EVENT_EPISODES_UI_STAGE2_START */
+.sensor-event-time {
+  display: grid;
+  gap: 6px;
+}
+
+.sensor-event-time time,
+.sensor-event-time small {
+  color: var(--muted);
+  font: 10px/1.35 monospace;
+  text-transform: uppercase;
+}
+
+.sensor-event-time small {
+  color: var(--ink);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.sensor-event-episode {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 15px 16px;
+  border: 1px solid var(--hairline);
+  background: #f7f6f2;
+}
+
+.sensor-event-episode > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sensor-event-episode > header b,
+.sensor-event-episode > header span {
+  font: 700 11px/1.2 monospace;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.sensor-event-episode > header span {
+  color: var(--muted);
+}
+
+.sensor-event-episode dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.sensor-event-episode dl > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.sensor-event-episode dt,
+.sensor-event-episode dd {
+  margin: 0;
+  font: 11px/1.5 monospace;
+}
+
+.sensor-event-episode dt {
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sensor-event-episode dd {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.sensor-event-item.is-resolved .sensor-event-episode {
+  border-color: #c7d5c9;
+  background: #f1f6f1;
+}
+
+.sensor-event-item.is-acknowledged .sensor-event-episode {
+  border-color: #ddd0a0;
+  background: #faf7e9;
+}
+
+@media (max-width: 760px) {
+  .sensor-event-episode dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sensor-event-episode dt {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.055em;
+}
+
+.sensor-event-episode dd {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.sensor-event-episode > header b {
+  font-size: 12px;
+}
+
+.sensor-event-episode > header span {
+  padding: 4px 7px;
+  border: 1px solid currentColor;
+  font-size: 10px;
+}
+
+/* AIRSCOPE_EVENT_EPISODES_UI_STAGE2_END */

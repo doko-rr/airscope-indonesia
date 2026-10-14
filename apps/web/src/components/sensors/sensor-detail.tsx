@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { SensorHistoryChart } from '@/components/charts/sensor-history-chart';
+import { formatRelativeDuration } from '@/lib/formatters';
 import type {
   SensorEvent,
   SensorEventSeverity,
@@ -550,7 +551,10 @@ export function SensorDetail() {
                     key={event.id}
                     className={`sensor-event-item is-${event.severity.toLowerCase()} is-${event.status.toLowerCase()}`}
                   >
-                    <time>{formatTime(event.occurredAt)} WIB</time>
+                    <div className="sensor-event-time">
+                      <time>{formatTime(event.occurredAt)} WIB</time>
+                      <small>Episode {event.episodeNumber}</small>
+                    </div>
                     <b>
                       <span aria-hidden="true" />
                       {event.severity}
@@ -559,6 +563,42 @@ export function SensorDetail() {
                       <strong>{event.title}</strong>
                       <p>{event.detail}</p>
                       <small>{event.type.replaceAll('_', ' ')}</small>
+
+                      <div className="sensor-event-episode">
+                        <header>
+                          <b>Episode {event.episodeNumber}</b>
+                          <span>{event.status}</span>
+                        </header>
+                        <dl>
+                          <div>
+                            <dt>First observed</dt>
+                            <dd>{formatTime(event.occurredAt)} WIB</dd>
+                          </div>
+                          <div>
+                            <dt>Last observed</dt>
+                            <dd>{formatTime(event.lastObservedAt)} WIB</dd>
+                          </div>
+                          {event.clearedAt ? (
+                            <div>
+                              <dt>Recovered</dt>
+                              <dd>{formatTime(event.clearedAt)} WIB</dd>
+                            </div>
+                          ) : null}
+                          <div>
+                            <dt>
+                              {event.clearedAt
+                                ? 'Episode duration'
+                                : 'Observed span'}
+                            </dt>
+                            <dd>
+                              {formatRelativeDuration(
+                                event.occurredAt,
+                                event.clearedAt ?? event.lastObservedAt,
+                              )}
+                            </dd>
+                          </div>
+                        </dl>
+                      </div>
 
                       {event.acknowledgedAt ? (
                         <div className="sensor-event-audit">
