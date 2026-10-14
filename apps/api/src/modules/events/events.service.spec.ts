@@ -71,6 +71,7 @@ function createPrismaMock() {
       const now = new Date('2026-10-12T04:30:00.000Z');
       const record = {
         clearedAt: null,
+        lastObservedAt: data.lastObservedAt ?? data.occurredAt,
         acknowledgedAt: null,
         acknowledgedBy: null,
         acknowledgmentNote: null,
@@ -153,6 +154,24 @@ describe('EventsService persistence', () => {
       episodeNumber: 1,
       status: 'ACTIVE',
     });
+  });
+
+  it('keeps occurredAt stable while lastObservedAt advances', async () => {
+    const { prisma, records } = createPrismaMock();
+    const service = new EventsService(new SensorsService(), prisma);
+
+    const first = await service.findBySensorCode('BDG-AQ-003', referenceDate);
+    const firstStored = [...records.values()][0];
+    const initialOccurredAt = firstStored.occurredAt;
+
+    const second = await service.findBySensorCode('BDG-AQ-003', referenceDate);
+    const secondStored = [...records.values()][0];
+
+    expect(second).toHaveLength(1);
+    expect(secondStored.occurredAt).toEqual(initialOccurredAt);
+    expect(secondStored.lastObservedAt).toEqual(
+      new Date(second[0].lastObservedAt),
+    );
   });
 
   it('does not reopen a manually resolved episode while condition remains', async () => {

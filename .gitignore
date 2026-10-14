@@ -207,3 +207,6 @@ apps/api/skills-lock.json
 
 # Local Event Episodes Stage 2 backups
 *.before-event-episodes-stage2-*
+
+# Local Event Episodes Stage 3A database backup prefix
+apps/api/prisma/dev.db.before-event-episodes-stage3a-

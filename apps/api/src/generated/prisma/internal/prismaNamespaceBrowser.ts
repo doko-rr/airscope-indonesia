@@ -79,6 +79,7 @@ export const AlertEventScalarFieldEnum = {
   title: 'title',
   detail: 'detail',
   occurredAt: 'occurredAt',
+  lastObservedAt: 'lastObservedAt',
   clearedAt: 'clearedAt',
   acknowledgedAt: 'acknowledgedAt',
   acknowledgedBy: 'acknowledgedBy',

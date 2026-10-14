@@ -19,6 +19,7 @@ model AlertEvent {
   title              String
   detail             String
   occurredAt         DateTime
+  lastObservedAt     DateTime?
   clearedAt          DateTime?
   acknowledgedAt     DateTime?
   acknowledgedBy     String?

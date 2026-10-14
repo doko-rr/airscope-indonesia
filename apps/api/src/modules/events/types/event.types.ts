@@ -19,6 +19,7 @@ export interface SensorEvent {
   title: string;
   detail: string;
   occurredAt: string;
+  lastObservedAt: string;
   clearedAt: string | null;
   acknowledgedAt: string | null;
   acknowledgedBy: string | null;
