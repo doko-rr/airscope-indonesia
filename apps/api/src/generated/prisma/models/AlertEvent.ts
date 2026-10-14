@@ -969,7 +969,7 @@ export interface AlertEventDelegate<ExtArgs extends runtime.Types.Extensions.Int
    *     // ... provide data here
    *   ]
    * })
-   *   
+   *
    */
   createMany<T extends AlertEventCreateManyArgs>(args?: Prisma.SelectSubset<T, AlertEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
@@ -1301,7 +1301,7 @@ export interface AlertEventFieldRefs {
   readonly createdAt: Prisma.FieldRef<"AlertEvent", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"AlertEvent", 'DateTime'>
 }
-  
+
 
 // Custom InputTypes
 /**
