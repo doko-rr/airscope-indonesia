@@ -53,7 +53,7 @@ export class EventsService {
 
     const stored = await this.prisma.alertEvent.findMany({
       where: { sensorCode: station.code },
-      orderBy: { occurredAt: 'desc' },
+      orderBy: [{ occurredAt: 'desc' }, { episodeNumber: 'desc' }],
     });
 
     return stored.map((event) => this.toSensorEvent(event));
