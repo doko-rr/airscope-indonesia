@@ -63,19 +63,69 @@ export class EventsService {
     derived: SensorEvent[],
     sensorCodes: string[],
   ): Promise<void> {
-    const activeFingerprints = derived.map((event) =>
-      this.eventFingerprint(event.sensorCode, event.type),
+    const activeConditionKeys = derived.map((event) =>
+      this.eventConditionKey(event.sensorCode, event.type),
     );
+    const synchronizedAt = new Date();
 
     await this.prisma.$transaction(async (transaction) => {
       for (const event of derived) {
-        const fingerprint = this.eventFingerprint(event.sensorCode, event.type);
+        const conditionKey = this.eventConditionKey(
+          event.sensorCode,
+          event.type,
+        );
+        const activeEpisode = await transaction.alertEvent.findFirst({
+          where: {
+            conditionKey,
+            status: { in: ['ACTIVE', 'ACKNOWLEDGED'] },
+          },
+          orderBy: { episodeNumber: 'desc' },
+        });
 
-        await transaction.alertEvent.upsert({
-          where: { fingerprint },
-          create: {
+        if (activeEpisode) {
+          await transaction.alertEvent.update({
+            where: { id: activeEpisode.id },
+            data: {
+              severity: event.severity,
+              title: event.title,
+              detail: event.detail,
+              occurredAt: new Date(event.occurredAt),
+              source: event.source,
+            },
+          });
+          continue;
+        }
+
+        const latestEpisode = await transaction.alertEvent.findFirst({
+          where: { conditionKey },
+          orderBy: { episodeNumber: 'desc' },
+        });
+
+        if (
+          latestEpisode?.status === 'RESOLVED' &&
+          latestEpisode.clearedAt === null
+        ) {
+          await transaction.alertEvent.update({
+            where: { id: latestEpisode.id },
+            data: {
+              severity: event.severity,
+              title: event.title,
+              detail: event.detail,
+              occurredAt: new Date(event.occurredAt),
+              source: event.source,
+            },
+          });
+          continue;
+        }
+
+        const episodeNumber = (latestEpisode?.episodeNumber ?? 0) + 1;
+
+        await transaction.alertEvent.create({
+          data: {
             id: randomUUID(),
-            fingerprint,
+            conditionKey,
+            episodeNumber,
+            fingerprint: this.episodeFingerprint(conditionKey, episodeNumber),
             sensorCode: event.sensorCode,
             type: event.type,
             severity: event.severity,
@@ -83,30 +133,39 @@ export class EventsService {
             title: event.title,
             detail: event.detail,
             occurredAt: new Date(event.occurredAt),
+            clearedAt: null,
             resolvedAt: null,
-            source: event.source,
-          },
-          update: {
-            severity: event.severity,
-            title: event.title,
-            detail: event.detail,
-            occurredAt: new Date(event.occurredAt),
             source: event.source,
           },
         });
       }
 
+      const missingConditionFilter = activeConditionKeys.length
+        ? { conditionKey: { notIn: activeConditionKeys } }
+        : {};
+
       await transaction.alertEvent.updateMany({
         where: {
           sensorCode: { in: sensorCodes },
           status: { in: ['ACTIVE', 'ACKNOWLEDGED'] },
-          ...(activeFingerprints.length
-            ? { fingerprint: { notIn: activeFingerprints } }
-            : {}),
+          ...missingConditionFilter,
         },
         data: {
           status: 'RESOLVED',
-          resolvedAt: new Date(),
+          resolvedAt: synchronizedAt,
+          clearedAt: synchronizedAt,
+        },
+      });
+
+      await transaction.alertEvent.updateMany({
+        where: {
+          sensorCode: { in: sensorCodes },
+          status: 'RESOLVED',
+          clearedAt: null,
+          ...missingConditionFilter,
+        },
+        data: {
+          clearedAt: synchronizedAt,
         },
       });
     });
@@ -229,11 +288,20 @@ export class EventsService {
     return events;
   }
 
-  private eventFingerprint(
+  private eventConditionKey(
     sensorCode: string,
     type: SensorEvent['type'],
   ): string {
     return `${sensorCode}:${type}`;
+  }
+
+  private episodeFingerprint(
+    conditionKey: string,
+    episodeNumber: number,
+  ): string {
+    return episodeNumber === 1
+      ? conditionKey
+      : `${conditionKey}:episode:${episodeNumber}`;
   }
 
   private measurementAgeMinutes(
@@ -256,8 +324,12 @@ export class EventsService {
     title: string,
     detail: string,
   ): SensorEvent {
+    const conditionKey = this.eventConditionKey(station.code, type);
+
     return {
-      id: this.eventFingerprint(station.code, type),
+      id: conditionKey,
+      conditionKey,
+      episodeNumber: 1,
       sensorCode: station.code,
       type,
       severity,
@@ -265,6 +337,7 @@ export class EventsService {
       title,
       detail,
       occurredAt: measurement.observedAt,
+      clearedAt: null,
       acknowledgedAt: null,
       acknowledgedBy: null,
       acknowledgmentNote: null,
@@ -278,6 +351,8 @@ export class EventsService {
   private toSensorEvent(event: AlertEvent): SensorEvent {
     return {
       id: event.id,
+      conditionKey: event.conditionKey ?? event.fingerprint,
+      episodeNumber: event.episodeNumber,
       sensorCode: event.sensorCode,
       type: event.type as SensorEvent['type'],
       severity: event.severity as SensorEvent['severity'],
@@ -285,6 +360,7 @@ export class EventsService {
       title: event.title,
       detail: event.detail,
       occurredAt: event.occurredAt.toISOString(),
+      clearedAt: event.clearedAt?.toISOString() ?? null,
       acknowledgedAt: event.acknowledgedAt?.toISOString() ?? null,
       acknowledgedBy: event.acknowledgedBy,
       acknowledgmentNote: event.acknowledgmentNote,

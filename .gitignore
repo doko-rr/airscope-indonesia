@@ -204,3 +204,6 @@ apps/api/.agents/
 apps/api/.claude/
 apps/api/.windsurf/
 apps/api/skills-lock.json
+
+# Local Event Episodes Stage 2 backups
+*.before-event-episodes-stage2-*

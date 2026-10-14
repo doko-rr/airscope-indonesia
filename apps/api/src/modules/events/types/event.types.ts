@@ -10,6 +10,8 @@ export type SensorEventType =
 
 export interface SensorEvent {
   id: string;
+  conditionKey: string;
+  episodeNumber: number;
   sensorCode: string;
   type: SensorEventType;
   severity: EventSeverity;
@@ -17,6 +19,7 @@ export interface SensorEvent {
   title: string;
   detail: string;
   occurredAt: string;
+  clearedAt: string | null;
   acknowledgedAt: string | null;
   acknowledgedBy: string | null;
   acknowledgmentNote: string | null;
