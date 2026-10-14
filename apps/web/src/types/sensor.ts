@@ -100,7 +100,7 @@ export interface SensorHistoryResponse {
 
 export type SensorEventSeverity = 'INFO' | 'CAUTION' | 'WARNING' | 'CRITICAL';
 
-export type SensorEventStatus = 'ACTIVE' | 'RESOLVED';
+export type SensorEventStatus = 'ACTIVE' | 'ACKNOWLEDGED' | 'RESOLVED';
 
 export type SensorEventType =
   | 'AIR_QUALITY_ADVISORY'
@@ -118,7 +118,12 @@ export interface SensorEvent {
   title: string;
   detail: string;
   occurredAt: string;
+  acknowledgedAt: string | null;
+  acknowledgedBy: string | null;
+  acknowledgmentNote: string | null;
   resolvedAt: string | null;
+  resolvedBy: string | null;
+  resolutionNote: string | null;
   source: 'DERIVED_SIMULATION';
 }
 

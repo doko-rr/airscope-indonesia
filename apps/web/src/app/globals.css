@@ -5502,3 +5502,323 @@ body {
   text-decoration: underline;
 }
 /* AIRSCOPE_EVENT_LOG_STAGE2_END */
+
+/* AIRSCOPE_EVENT_ACTIONS_STAGE4_START */
+.sensor-event-item.is-acknowledged {
+  background: #fff8e8;
+}
+.sensor-event-copy {
+  min-width: 0;
+}
+.sensor-event-operation {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+}
+.sensor-event-operation > small {
+  color: var(--muted);
+  font: 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-operation > button,
+.sensor-event-action-panel button {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: #fff;
+  color: var(--ink);
+  font: 700 9px monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.sensor-event-operation > button:hover,
+.sensor-event-action-panel button:hover {
+  color: #fff;
+  background: var(--ink);
+}
+.sensor-event-operation button:disabled,
+.sensor-event-action-panel button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.sensor-event-status {
+  padding: 5px 7px;
+  border: 1px solid currentColor;
+  font: 700 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-status.is-active {
+  color: #8b4c00;
+}
+.sensor-event-status.is-acknowledged {
+  color: #5f531f;
+  background: #fff0b8;
+}
+.sensor-event-status.is-resolved {
+  color: var(--healthy-dark);
+  background: #e3ece4;
+}
+.sensor-event-audit {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding: 9px 10px;
+  border-left: 3px solid #9b8534;
+  background: #f8f4e5;
+}
+.sensor-event-audit.is-resolution {
+  border-left-color: var(--healthy);
+  background: #edf3ed;
+}
+.sensor-event-audit b {
+  font: 700 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-audit span,
+.sensor-event-audit p {
+  margin: 0;
+  color: var(--muted);
+  font: 9px/1.45 monospace;
+}
+.sensor-event-action-panel {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--hairline);
+  background: #f3f1eb;
+}
+.sensor-event-action-panel > strong {
+  font: 700 10px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-action-panel label {
+  display: grid;
+  gap: 5px;
+}
+.sensor-event-action-panel label span {
+  color: var(--muted);
+  font: 9px monospace;
+  text-transform: uppercase;
+}
+.sensor-event-action-panel input,
+.sensor-event-action-panel textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 9px;
+  border: 1px solid #bdb8ad;
+  border-radius: 0;
+  color: var(--ink);
+  background: #fff;
+  font: 10px monospace;
+}
+.sensor-event-action-panel > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.sensor-event-mutation-error {
+  color: var(--critical) !important;
+  font-weight: 700 !important;
+}
+@media (max-width: 1050px) {
+  .sensor-event-operation {
+    justify-items: start;
+  }
+}
+/* AIRSCOPE_EVENT_ACTIONS_STAGE4_END */
+
+/* AIRSCOPE_ISSUE_CARDS_FINAL_START */
+
+/*
+ * Format final:
+ * - titik kiri
+ * - judul tepat tengah
+ * - angka kanan
+ * - tanpa panah
+ * - kartu tidak interaktif
+ */
+.sensor-active-issues-strip > button {
+  position: relative;
+  cursor: default;
+  opacity: 1;
+  pointer-events: none;
+}
+
+/* Titik tetap di kiri. */
+.sensor-active-issues-strip > button > i {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+/* Judul tepat di tengah dan diperbesar setara ACTIVE ISSUES. */
+.sensor-active-issues-strip > button > span {
+  position: absolute;
+  top: 50%;
+  right: 48px;
+  left: 48px;
+  margin: 0;
+  transform: translateY(-50%);
+  color: var(--ink);
+  font: 700 12px/1.2 monospace;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Angka tetap di kanan dan sejajar secara vertikal. */
+.sensor-active-issues-strip > button > strong {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  left: auto;
+  margin: 0;
+  transform: translateY(-50%);
+  color: var(--ink);
+  font: 700 16px/1 monospace;
+  text-align: right;
+}
+
+/* Hapus seluruh tanda panah dari tiga kartu issue. */
+.sensor-active-issues-strip > button::after {
+  display: none;
+  content: none;
+}
+
+/* Jangan redupkan kartu yang jumlahnya nol. */
+.sensor-active-issues-strip > button:disabled,
+.sensor-active-issues-strip > button.is-zero {
+  color: inherit;
+  opacity: 1;
+  cursor: default;
+}
+
+/* AIRSCOPE_ISSUE_CARDS_FINAL_END */
+
+/* AIRSCOPE_EVENT_ACTION_COMPACT_FINAL_START */
+
+/* Kolom kanan dibuat kompak dan tidak menguasai kartu. */
+.sensor-event-item {
+  grid-template-columns: 170px 112px minmax(0, 1fr) 148px;
+  align-items: center;
+  column-gap: 18px;
+  padding: 16px 18px;
+}
+
+/* Status, sumber, dan tindakan menjadi satu kelompok kecil. */
+.sensor-event-operation {
+  display: flex;
+  width: 128px;
+  min-width: 0;
+  align-self: center;
+  justify-self: end;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 6px;
+  padding: 0;
+}
+
+/* Badge status berada di tengah, tidak menempel garis atas. */
+.sensor-event-operation > .sensor-event-status {
+  position: static;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 6px 8px;
+  align-self: auto;
+  text-align: center;
+}
+
+/* Sumber data berada tepat di bawah status. */
+.sensor-event-operation > small {
+  width: 100%;
+  margin: 1px 0 5px;
+  align-self: auto;
+  color: #565d58;
+  font-size: 9px;
+  line-height: 1.3;
+  text-align: center;
+  white-space: normal;
+}
+
+/* Tombol dibuat kompak dan konsisten. */
+.sensor-event-operation > button {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  margin: 0;
+  padding: 0 8px;
+  font-size: 9px;
+  text-align: center;
+}
+
+/* Footer tetap menjadi footer penuh, bukan bagian panel kanan. */
+.sensor-event-disclaimer {
+  clear: both;
+  width: auto;
+  min-height: 38px;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+/* Tablet. */
+@media (max-width: 1050px) {
+  .sensor-event-item {
+    grid-template-columns: 150px 105px minmax(0, 1fr);
+  }
+
+  .sensor-event-operation {
+    width: auto;
+    grid-column: 1 / -1;
+    justify-self: start;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .sensor-event-operation > .sensor-event-status {
+    width: auto;
+    min-width: 92px;
+  }
+
+  .sensor-event-operation > small {
+    width: auto;
+    margin: 0 8px 0 0;
+  }
+
+  .sensor-event-operation > button {
+    width: auto;
+    min-width: 108px;
+  }
+}
+
+/* Ponsel. */
+@media (max-width: 760px) {
+  .sensor-event-item {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-event-operation {
+    width: 100%;
+    grid-column: auto;
+    justify-self: stretch;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sensor-event-operation > .sensor-event-status,
+  .sensor-event-operation > small,
+  .sensor-event-operation > button {
+    width: 100%;
+  }
+}
+
+/* AIRSCOPE_EVENT_ACTION_COMPACT_FINAL_END */

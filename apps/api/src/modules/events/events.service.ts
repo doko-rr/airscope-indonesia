@@ -1,9 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import type { AlertEvent } from '../../generated/prisma/client';
+import { PrismaService } from '../../database/prisma.service';
 import { SensorsService } from '../sensors/sensors.service';
 import type {
   SensorMeasurement,
   SensorStation,
 } from '../sensors/types/sensor.types';
+import type { EventActionDto } from './dto/event-action.dto';
 import type { SensorEvent } from './types/event.types';
 
 const DELAYED_AFTER_MINUTES = 10;
@@ -11,25 +19,147 @@ const STALE_AFTER_MINUTES = 20;
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly sensorsService: SensorsService) {}
+  constructor(
+    private readonly sensorsService: SensorsService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  findAll(referenceDate = new Date()): SensorEvent[] {
-    return this.sensorsService
-      .findAll()
-      .flatMap((station) => this.deriveStationEvents(station, referenceDate))
-      .sort((left, right) => {
-        const severityOrder = { CRITICAL: 0, WARNING: 1, CAUTION: 2, INFO: 3 };
-        return (
-          severityOrder[left.severity] - severityOrder[right.severity] ||
-          right.occurredAt.localeCompare(left.occurredAt) ||
-          left.sensorCode.localeCompare(right.sensorCode)
-        );
-      });
+  async findAll(referenceDate = new Date()): Promise<SensorEvent[]> {
+    const stations = this.sensorsService.findAll();
+    const derived = stations.flatMap((station) =>
+      this.deriveStationEvents(station, referenceDate),
+    );
+
+    await this.synchronizeEvents(
+      derived,
+      stations.map((station) => station.code),
+    );
+
+    const stored = await this.prisma.alertEvent.findMany({
+      orderBy: [{ occurredAt: 'desc' }, { sensorCode: 'asc' }],
+    });
+
+    return stored.map((event) => this.toSensorEvent(event));
   }
 
-  findBySensorCode(code: string, referenceDate = new Date()): SensorEvent[] {
+  async findBySensorCode(
+    code: string,
+    referenceDate = new Date(),
+  ): Promise<SensorEvent[]> {
     const station = this.sensorsService.findByCode(code);
-    return this.deriveStationEvents(station, referenceDate);
+    const derived = this.deriveStationEvents(station, referenceDate);
+
+    await this.synchronizeEvents(derived, [station.code]);
+
+    const stored = await this.prisma.alertEvent.findMany({
+      where: { sensorCode: station.code },
+      orderBy: { occurredAt: 'desc' },
+    });
+
+    return stored.map((event) => this.toSensorEvent(event));
+  }
+
+  private async synchronizeEvents(
+    derived: SensorEvent[],
+    sensorCodes: string[],
+  ): Promise<void> {
+    const activeFingerprints = derived.map((event) =>
+      this.eventFingerprint(event.sensorCode, event.type),
+    );
+
+    await this.prisma.$transaction(async (transaction) => {
+      for (const event of derived) {
+        const fingerprint = this.eventFingerprint(event.sensorCode, event.type);
+
+        await transaction.alertEvent.upsert({
+          where: { fingerprint },
+          create: {
+            id: randomUUID(),
+            fingerprint,
+            sensorCode: event.sensorCode,
+            type: event.type,
+            severity: event.severity,
+            status: 'ACTIVE',
+            title: event.title,
+            detail: event.detail,
+            occurredAt: new Date(event.occurredAt),
+            resolvedAt: null,
+            source: event.source,
+          },
+          update: {
+            severity: event.severity,
+            title: event.title,
+            detail: event.detail,
+            occurredAt: new Date(event.occurredAt),
+            source: event.source,
+          },
+        });
+      }
+
+      await transaction.alertEvent.updateMany({
+        where: {
+          sensorCode: { in: sensorCodes },
+          status: { in: ['ACTIVE', 'ACKNOWLEDGED'] },
+          ...(activeFingerprints.length
+            ? { fingerprint: { notIn: activeFingerprints } }
+            : {}),
+        },
+        data: {
+          status: 'RESOLVED',
+          resolvedAt: new Date(),
+        },
+      });
+    });
+  }
+
+  async acknowledge(id: string, action: EventActionDto): Promise<SensorEvent> {
+    const current = await this.findStoredEvent(id);
+
+    if (current.status === 'RESOLVED') {
+      throw new ConflictException('Resolved events cannot be acknowledged');
+    }
+
+    if (current.status === 'ACKNOWLEDGED') {
+      return this.toSensorEvent(current);
+    }
+
+    const updated = await this.prisma.alertEvent.update({
+      where: { id },
+      data: {
+        status: 'ACKNOWLEDGED',
+        acknowledgedAt: new Date(),
+        acknowledgedBy: action.operator,
+        acknowledgmentNote: action.note ?? null,
+      },
+    });
+
+    return this.toSensorEvent(updated);
+  }
+
+  async resolve(id: string, action: EventActionDto): Promise<SensorEvent> {
+    const current = await this.findStoredEvent(id);
+
+    if (current.status === 'RESOLVED') {
+      return this.toSensorEvent(current);
+    }
+
+    const updated = await this.prisma.alertEvent.update({
+      where: { id },
+      data: {
+        status: 'RESOLVED',
+        resolvedAt: new Date(),
+        resolvedBy: action.operator,
+        resolutionNote: action.note ?? null,
+      },
+    });
+
+    return this.toSensorEvent(updated);
+  }
+
+  private async findStoredEvent(id: string): Promise<AlertEvent> {
+    const event = await this.prisma.alertEvent.findUnique({ where: { id } });
+    if (!event) throw new NotFoundException(`Event ${id} was not found`);
+    return event;
   }
 
   private deriveStationEvents(
@@ -42,11 +172,9 @@ export class EventsService {
       referenceDate,
     );
 
-    // Communication failures take precedence so one root cause creates one
-    // active event. Offline supersedes stale; stale supersedes advisory.
     if (station.status === 'OFFLINE') {
       return [
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'STATION_OFFLINE',
@@ -59,7 +187,7 @@ export class EventsService {
 
     if (!Number.isFinite(ageMinutes) || ageMinutes > STALE_AFTER_MINUTES) {
       return [
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'TELEMETRY_STALE',
@@ -74,7 +202,7 @@ export class EventsService {
 
     if (station.status === 'WARNING') {
       events.push(
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'AIR_QUALITY_ADVISORY',
@@ -87,7 +215,7 @@ export class EventsService {
 
     if (ageMinutes > DELAYED_AFTER_MINUTES) {
       events.push(
-        this.createEvent(
+        this.createDerivedEvent(
           station,
           measurement,
           'TELEMETRY_DELAYED',
@@ -99,6 +227,13 @@ export class EventsService {
     }
 
     return events;
+  }
+
+  private eventFingerprint(
+    sensorCode: string,
+    type: SensorEvent['type'],
+  ): string {
+    return `${sensorCode}:${type}`;
   }
 
   private measurementAgeMinutes(
@@ -113,7 +248,7 @@ export class EventsService {
     );
   }
 
-  private createEvent(
+  private createDerivedEvent(
     station: SensorStation,
     measurement: SensorMeasurement,
     type: SensorEvent['type'],
@@ -121,10 +256,8 @@ export class EventsService {
     title: string,
     detail: string,
   ): SensorEvent {
-    const bucket = measurement.observedAt.replace(/[^0-9]/g, '').slice(0, 12);
-
     return {
-      id: `${station.code}-${type}-${bucket}`,
+      id: this.eventFingerprint(station.code, type),
       sensorCode: station.code,
       type,
       severity,
@@ -132,8 +265,33 @@ export class EventsService {
       title,
       detail,
       occurredAt: measurement.observedAt,
+      acknowledgedAt: null,
+      acknowledgedBy: null,
+      acknowledgmentNote: null,
       resolvedAt: null,
+      resolvedBy: null,
+      resolutionNote: null,
       source: 'DERIVED_SIMULATION',
+    };
+  }
+
+  private toSensorEvent(event: AlertEvent): SensorEvent {
+    return {
+      id: event.id,
+      sensorCode: event.sensorCode,
+      type: event.type as SensorEvent['type'],
+      severity: event.severity as SensorEvent['severity'],
+      status: event.status as SensorEvent['status'],
+      title: event.title,
+      detail: event.detail,
+      occurredAt: event.occurredAt.toISOString(),
+      acknowledgedAt: event.acknowledgedAt?.toISOString() ?? null,
+      acknowledgedBy: event.acknowledgedBy,
+      acknowledgmentNote: event.acknowledgmentNote,
+      resolvedAt: event.resolvedAt?.toISOString() ?? null,
+      resolvedBy: event.resolvedBy,
+      resolutionNote: event.resolutionNote,
+      source: event.source as SensorEvent['source'],
     };
   }
 }
