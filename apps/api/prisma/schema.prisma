@@ -10,7 +10,7 @@ datasource db {
 model AlertEvent {
   id                 String    @id
   fingerprint        String    @unique
-  conditionKey       String?
+  conditionKey       String
   episodeNumber      Int       @default(1)
   sensorCode         String
   type               String
@@ -19,7 +19,7 @@ model AlertEvent {
   title              String
   detail             String
   occurredAt         DateTime
-  lastObservedAt     DateTime?
+  lastObservedAt     DateTime
   clearedAt          DateTime?
   acknowledgedAt     DateTime?
   acknowledgedBy     String?

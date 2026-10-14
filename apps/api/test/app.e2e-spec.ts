@@ -17,10 +17,11 @@ describe('AppController (e2e)', () => {
   });
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+    return request(app.getHttpServer()).get('/').expect(200).expect({
+      name: 'AirScope Indonesia API',
+      version: '0.1.0',
+      health: '/api/v1/health',
+    });
   });
 
   afterEach(async () => {

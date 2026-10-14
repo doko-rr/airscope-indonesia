@@ -284,7 +284,7 @@ export type AlertEventGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inter
 export type AlertEventGroupByOutputType = {
   id: string
   fingerprint: string
-  conditionKey: string | null
+  conditionKey: string
   episodeNumber: number
   sensorCode: string
   type: string
@@ -293,7 +293,7 @@ export type AlertEventGroupByOutputType = {
   title: string
   detail: string
   occurredAt: Date
-  lastObservedAt: Date | null
+  lastObservedAt: Date
   clearedAt: Date | null
   acknowledgedAt: Date | null
   acknowledgedBy: string | null
@@ -332,7 +332,7 @@ export type AlertEventWhereInput = {
   NOT?: Prisma.AlertEventWhereInput | Prisma.AlertEventWhereInput[]
   id?: Prisma.StringFilter<"AlertEvent"> | string
   fingerprint?: Prisma.StringFilter<"AlertEvent"> | string
-  conditionKey?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
+  conditionKey?: Prisma.StringFilter<"AlertEvent"> | string
   episodeNumber?: Prisma.IntFilter<"AlertEvent"> | number
   sensorCode?: Prisma.StringFilter<"AlertEvent"> | string
   type?: Prisma.StringFilter<"AlertEvent"> | string
@@ -341,7 +341,7 @@ export type AlertEventWhereInput = {
   title?: Prisma.StringFilter<"AlertEvent"> | string
   detail?: Prisma.StringFilter<"AlertEvent"> | string
   occurredAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
-  lastObservedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
+  lastObservedAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
   clearedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
   acknowledgedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
   acknowledgedBy?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
@@ -357,7 +357,7 @@ export type AlertEventWhereInput = {
 export type AlertEventOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   fingerprint?: Prisma.SortOrder
-  conditionKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  conditionKey?: Prisma.SortOrder
   episodeNumber?: Prisma.SortOrder
   sensorCode?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -366,7 +366,7 @@ export type AlertEventOrderByWithRelationInput = {
   title?: Prisma.SortOrder
   detail?: Prisma.SortOrder
   occurredAt?: Prisma.SortOrder
-  lastObservedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastObservedAt?: Prisma.SortOrder
   clearedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   acknowledgedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   acknowledgedBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -386,7 +386,7 @@ export type AlertEventWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.AlertEventWhereInput | Prisma.AlertEventWhereInput[]
   OR?: Prisma.AlertEventWhereInput[]
   NOT?: Prisma.AlertEventWhereInput | Prisma.AlertEventWhereInput[]
-  conditionKey?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
+  conditionKey?: Prisma.StringFilter<"AlertEvent"> | string
   episodeNumber?: Prisma.IntFilter<"AlertEvent"> | number
   sensorCode?: Prisma.StringFilter<"AlertEvent"> | string
   type?: Prisma.StringFilter<"AlertEvent"> | string
@@ -395,7 +395,7 @@ export type AlertEventWhereUniqueInput = Prisma.AtLeast<{
   title?: Prisma.StringFilter<"AlertEvent"> | string
   detail?: Prisma.StringFilter<"AlertEvent"> | string
   occurredAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
-  lastObservedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
+  lastObservedAt?: Prisma.DateTimeFilter<"AlertEvent"> | Date | string
   clearedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
   acknowledgedAt?: Prisma.DateTimeNullableFilter<"AlertEvent"> | Date | string | null
   acknowledgedBy?: Prisma.StringNullableFilter<"AlertEvent"> | string | null
@@ -411,7 +411,7 @@ export type AlertEventWhereUniqueInput = Prisma.AtLeast<{
 export type AlertEventOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   fingerprint?: Prisma.SortOrder
-  conditionKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  conditionKey?: Prisma.SortOrder
   episodeNumber?: Prisma.SortOrder
   sensorCode?: Prisma.SortOrder
   type?: Prisma.SortOrder
@@ -420,7 +420,7 @@ export type AlertEventOrderByWithAggregationInput = {
   title?: Prisma.SortOrder
   detail?: Prisma.SortOrder
   occurredAt?: Prisma.SortOrder
-  lastObservedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastObservedAt?: Prisma.SortOrder
   clearedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   acknowledgedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   acknowledgedBy?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -444,7 +444,7 @@ export type AlertEventScalarWhereWithAggregatesInput = {
   NOT?: Prisma.AlertEventScalarWhereWithAggregatesInput | Prisma.AlertEventScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
   fingerprint?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
-  conditionKey?: Prisma.StringNullableWithAggregatesFilter<"AlertEvent"> | string | null
+  conditionKey?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
   episodeNumber?: Prisma.IntWithAggregatesFilter<"AlertEvent"> | number
   sensorCode?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
   type?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
@@ -453,7 +453,7 @@ export type AlertEventScalarWhereWithAggregatesInput = {
   title?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
   detail?: Prisma.StringWithAggregatesFilter<"AlertEvent"> | string
   occurredAt?: Prisma.DateTimeWithAggregatesFilter<"AlertEvent"> | Date | string
-  lastObservedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AlertEvent"> | Date | string | null
+  lastObservedAt?: Prisma.DateTimeWithAggregatesFilter<"AlertEvent"> | Date | string
   clearedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AlertEvent"> | Date | string | null
   acknowledgedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AlertEvent"> | Date | string | null
   acknowledgedBy?: Prisma.StringNullableWithAggregatesFilter<"AlertEvent"> | string | null
@@ -469,7 +469,7 @@ export type AlertEventScalarWhereWithAggregatesInput = {
 export type AlertEventCreateInput = {
   id: string
   fingerprint: string
-  conditionKey?: string | null
+  conditionKey: string
   episodeNumber?: number
   sensorCode: string
   type: string
@@ -478,7 +478,7 @@ export type AlertEventCreateInput = {
   title: string
   detail: string
   occurredAt: Date | string
-  lastObservedAt?: Date | string | null
+  lastObservedAt: Date | string
   clearedAt?: Date | string | null
   acknowledgedAt?: Date | string | null
   acknowledgedBy?: string | null
@@ -494,7 +494,7 @@ export type AlertEventCreateInput = {
 export type AlertEventUncheckedCreateInput = {
   id: string
   fingerprint: string
-  conditionKey?: string | null
+  conditionKey: string
   episodeNumber?: number
   sensorCode: string
   type: string
@@ -503,7 +503,7 @@ export type AlertEventUncheckedCreateInput = {
   title: string
   detail: string
   occurredAt: Date | string
-  lastObservedAt?: Date | string | null
+  lastObservedAt: Date | string
   clearedAt?: Date | string | null
   acknowledgedAt?: Date | string | null
   acknowledgedBy?: string | null
@@ -519,7 +519,7 @@ export type AlertEventUncheckedCreateInput = {
 export type AlertEventUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  conditionKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  conditionKey?: Prisma.StringFieldUpdateOperationsInput | string
   episodeNumber?: Prisma.IntFieldUpdateOperationsInput | number
   sensorCode?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -528,7 +528,7 @@ export type AlertEventUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  lastObservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastObservedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clearedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -544,7 +544,7 @@ export type AlertEventUpdateInput = {
 export type AlertEventUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  conditionKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  conditionKey?: Prisma.StringFieldUpdateOperationsInput | string
   episodeNumber?: Prisma.IntFieldUpdateOperationsInput | number
   sensorCode?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -553,7 +553,7 @@ export type AlertEventUncheckedUpdateInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  lastObservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastObservedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clearedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -569,7 +569,7 @@ export type AlertEventUncheckedUpdateInput = {
 export type AlertEventCreateManyInput = {
   id: string
   fingerprint: string
-  conditionKey?: string | null
+  conditionKey: string
   episodeNumber?: number
   sensorCode: string
   type: string
@@ -578,7 +578,7 @@ export type AlertEventCreateManyInput = {
   title: string
   detail: string
   occurredAt: Date | string
-  lastObservedAt?: Date | string | null
+  lastObservedAt: Date | string
   clearedAt?: Date | string | null
   acknowledgedAt?: Date | string | null
   acknowledgedBy?: string | null
@@ -594,7 +594,7 @@ export type AlertEventCreateManyInput = {
 export type AlertEventUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  conditionKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  conditionKey?: Prisma.StringFieldUpdateOperationsInput | string
   episodeNumber?: Prisma.IntFieldUpdateOperationsInput | number
   sensorCode?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -603,7 +603,7 @@ export type AlertEventUpdateManyMutationInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  lastObservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastObservedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clearedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -619,7 +619,7 @@ export type AlertEventUpdateManyMutationInput = {
 export type AlertEventUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fingerprint?: Prisma.StringFieldUpdateOperationsInput | string
-  conditionKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  conditionKey?: Prisma.StringFieldUpdateOperationsInput | string
   episodeNumber?: Prisma.IntFieldUpdateOperationsInput | number
   sensorCode?: Prisma.StringFieldUpdateOperationsInput | string
   type?: Prisma.StringFieldUpdateOperationsInput | string
@@ -628,7 +628,7 @@ export type AlertEventUncheckedUpdateManyInput = {
   title?: Prisma.StringFieldUpdateOperationsInput | string
   detail?: Prisma.StringFieldUpdateOperationsInput | string
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  lastObservedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastObservedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   clearedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acknowledgedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -733,10 +733,6 @@ export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type IntFieldUpdateOperationsInput = {
   set?: number
   increment?: number
@@ -751,6 +747,10 @@ export type DateTimeFieldUpdateOperationsInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 
@@ -863,7 +863,7 @@ export type $AlertEventPayload<ExtArgs extends runtime.Types.Extensions.Internal
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     fingerprint: string
-    conditionKey: string | null
+    conditionKey: string
     episodeNumber: number
     sensorCode: string
     type: string
@@ -872,7 +872,7 @@ export type $AlertEventPayload<ExtArgs extends runtime.Types.Extensions.Internal
     title: string
     detail: string
     occurredAt: Date
-    lastObservedAt: Date | null
+    lastObservedAt: Date
     clearedAt: Date | null
     acknowledgedAt: Date | null
     acknowledgedBy: string | null
