@@ -70,6 +70,8 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const AlertEventScalarFieldEnum = {
   id: 'id',
   fingerprint: 'fingerprint',
+  conditionKey: 'conditionKey',
+  episodeNumber: 'episodeNumber',
   sensorCode: 'sensorCode',
   type: 'type',
   severity: 'severity',
@@ -77,6 +79,8 @@ export const AlertEventScalarFieldEnum = {
   title: 'title',
   detail: 'detail',
   occurredAt: 'occurredAt',
+  lastObservedAt: 'lastObservedAt',
+  clearedAt: 'clearedAt',
   acknowledgedAt: 'acknowledgedAt',
   acknowledgedBy: 'acknowledgedBy',
   acknowledgmentNote: 'acknowledgmentNote',

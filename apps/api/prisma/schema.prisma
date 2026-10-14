@@ -10,6 +10,8 @@ datasource db {
 model AlertEvent {
   id                 String    @id
   fingerprint        String    @unique
+  conditionKey       String
+  episodeNumber      Int       @default(1)
   sensorCode         String
   type               String
   severity           String
@@ -17,6 +19,8 @@ model AlertEvent {
   title              String
   detail             String
   occurredAt         DateTime
+  lastObservedAt     DateTime
+  clearedAt          DateTime?
   acknowledgedAt     DateTime?
   acknowledgedBy     String?
   acknowledgmentNote String?
@@ -27,6 +31,8 @@ model AlertEvent {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
+  @@unique([conditionKey, episodeNumber])
+  @@index([conditionKey, status])
   @@index([sensorCode, occurredAt])
   @@index([status, severity])
   @@index([type, status])

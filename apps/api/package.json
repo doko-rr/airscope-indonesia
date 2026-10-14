@@ -28,7 +28,8 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
     "db:studio": "prisma studio",
-    "db:setup": "prisma generate && prisma migrate deploy"
+    "db:setup": "prisma generate && prisma migrate deploy",
+    "test:episodes:integration": "vitest run --config ./vitest.config.e2e.ts test/events-episodes.e2e-spec.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
