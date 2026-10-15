@@ -131,6 +131,15 @@ export interface SensorEvent {
   source: 'DERIVED_SIMULATION';
 }
 
+export interface EventsResponse {
+  data: SensorEvent[];
+  metadata: {
+    count: number;
+    source: 'PERSISTED_DERIVED_SIMULATION';
+    severityOrder: SensorEventSeverity[];
+  };
+}
+
 export interface SensorEventsResponse {
   data: SensorEvent[];
   metadata: {

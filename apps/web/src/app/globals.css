@@ -5938,3 +5938,49 @@ body {
 }
 
 /* AIRSCOPE_EVENT_EPISODES_UI_STAGE2_END */
+
+/* AIRSCOPE_EVENT_EPISODES_UI_STAGE3_START */
+.alert-episode-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px 10px;
+  margin-top: 4px;
+}
+
+.alert-episode-meta b,
+.alert-episode-meta span,
+.alert-episode-meta small {
+  font: 700 10px/1.35 monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.alert-episode-meta b {
+  color: var(--ink);
+}
+
+.alert-episode-meta span {
+  padding: 3px 6px;
+  border: 1px solid currentColor;
+  color: #8b4c00;
+  background: #fff7e8;
+}
+
+.alert-episode-meta small {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.alert-row.is-critical .alert-episode-meta span {
+  color: var(--critical);
+  background: #fff0ef;
+}
+
+@media (max-width: 760px) {
+  .alert-episode-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+/* AIRSCOPE_EVENT_EPISODES_UI_STAGE3_END */

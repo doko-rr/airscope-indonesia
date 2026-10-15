@@ -3,12 +3,24 @@ import { AlertsDirectory } from '@/components/alerts/alerts-directory';
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { AtlasContextStrip } from '@/components/layout/atlas-context-strip';
 import { OperationalHeader } from '@/components/layout/operational-header';
-import { getStationOverview } from '@/lib/airscope-api';
+import { getEvents, getStationOverview } from '@/lib/airscope-api';
 import { formatObservationTime } from '@/lib/formatters';
 
 export default async function AlertsPage() {
-  const stations = await getStationOverview().catch(() => []);
+  const [stations, eventsResponse] = await Promise.all([
+    getStationOverview().catch(() => []),
+    getEvents().catch(() => ({
+      data: [],
+      metadata: {
+        count: 0,
+        source: 'PERSISTED_DERIVED_SIMULATION' as const,
+        severityOrder: ['CRITICAL', 'WARNING', 'CAUTION', 'INFO'] as const,
+      },
+    })),
+  ]);
+
   const latestObservation = stations[0]?.latest.observedAt;
+  const events = eventsResponse.data;
 
   return (
     <main className="application-shell">
@@ -43,7 +55,11 @@ export default async function AlertsPage() {
             <div className="alerts-loading">Loading alert controls…</div>
           }
         >
-          <AlertsDirectory stations={stations} generatedAtMs={Date.now()} />
+          <AlertsDirectory
+            stations={stations}
+            events={events}
+            generatedAtMs={Date.now()}
+          />
         </Suspense>
       </div>
     </main>
