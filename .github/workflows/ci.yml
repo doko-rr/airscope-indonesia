@@ -1,0 +1,92 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+      - chore/github-actions-ci
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DATABASE_URL: file:./prisma/ci.db
+      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+      CI: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter api prisma:generate
+
+      - name: Prepare fresh CI database
+        run: |
+          rm -f apps/api/prisma/ci.db
+          rm -f apps/api/prisma/ci.db-journal
+          rm -f apps/api/prisma/ci.db-shm
+          rm -f apps/api/prisma/ci.db-wal
+          pnpm --filter api db:migrate:deploy
+          pnpm --filter api db:status
+
+      - name: API typecheck
+        run: pnpm --filter api typecheck
+
+      - name: API unit tests
+        run: pnpm --filter api test
+
+      - name: API end-to-end tests
+        run: pnpm --filter api test:e2e
+
+      - name: API production build
+        run: pnpm --filter api build
+
+      - name: Web typecheck
+        run: pnpm --filter web typecheck
+
+      - name: Web production build
+        run: pnpm --filter web build
+
+      - name: Verify integration database cleanup
+        run: |
+          test ! -f apps/api/prisma/event-episodes-integration.db
+          test ! -f apps/api/prisma/event-episodes-integration.db-journal
+          test ! -f apps/api/prisma/event-episodes-integration.db-shm
+          test ! -f apps/api/prisma/event-episodes-integration.db-wal
+
+      - name: Clean CI database
+        if: always()
+        run: |
+          rm -f apps/api/prisma/ci.db
+          rm -f apps/api/prisma/ci.db-journal
+          rm -f apps/api/prisma/ci.db-shm
+          rm -f apps/api/prisma/ci.db-wal
