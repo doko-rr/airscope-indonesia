@@ -73,6 +73,9 @@ jobs:
       - name: Web typecheck
         run: pnpm --filter web typecheck
 
+      - name: Web tests
+        run: pnpm --filter web test
+
       - name: Web production build
         run: pnpm --filter web build
 

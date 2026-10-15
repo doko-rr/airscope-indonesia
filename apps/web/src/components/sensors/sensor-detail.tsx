@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { SensorHistoryChart } from '@/components/charts/sensor-history-chart';
 import { formatRelativeDuration } from '@/lib/formatters';
+import { groupEventEpisodes } from '@/lib/events/episodes';
 import type {
   SensorEvent,
   SensorEventSeverity,
@@ -135,41 +136,6 @@ function MetricCard({
       <small>{unit}</small>
     </article>
   );
-}
-
-interface EventEpisodeGroup {
-  conditionKey: string;
-  current: SensorEvent;
-  previous: SensorEvent[];
-}
-
-function groupEventEpisodes(events: SensorEvent[]): EventEpisodeGroup[] {
-  const grouped = new Map<string, SensorEvent[]>();
-
-  for (const event of events) {
-    const episodes = grouped.get(event.conditionKey) ?? [];
-
-    episodes.push(event);
-    grouped.set(event.conditionKey, episodes);
-  }
-
-  return [...grouped.entries()]
-    .map(([conditionKey, episodes]) => {
-      const ordered = [...episodes].sort(
-        (first, second) => second.episodeNumber - first.episodeNumber,
-      );
-
-      return {
-        conditionKey,
-        current: ordered[0],
-        previous: ordered.slice(1),
-      };
-    })
-    .sort(
-      (first, second) =>
-        new Date(second.current.occurredAt).getTime() -
-        new Date(first.current.occurredAt).getTime(),
-    );
 }
 
 export function SensorDetail() {
