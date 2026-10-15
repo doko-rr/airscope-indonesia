@@ -137,6 +137,41 @@ function MetricCard({
   );
 }
 
+interface EventEpisodeGroup {
+  conditionKey: string;
+  current: SensorEvent;
+  previous: SensorEvent[];
+}
+
+function groupEventEpisodes(events: SensorEvent[]): EventEpisodeGroup[] {
+  const grouped = new Map<string, SensorEvent[]>();
+
+  for (const event of events) {
+    const episodes = grouped.get(event.conditionKey) ?? [];
+
+    episodes.push(event);
+    grouped.set(event.conditionKey, episodes);
+  }
+
+  return [...grouped.entries()]
+    .map(([conditionKey, episodes]) => {
+      const ordered = [...episodes].sort(
+        (first, second) => second.episodeNumber - first.episodeNumber,
+      );
+
+      return {
+        conditionKey,
+        current: ordered[0],
+        previous: ordered.slice(1),
+      };
+    })
+    .sort(
+      (first, second) =>
+        new Date(second.current.occurredAt).getTime() -
+        new Date(first.current.occurredAt).getTime(),
+    );
+}
+
 export function SensorDetail() {
   const params = useParams<{ code: string }>();
   const router = useRouter();
@@ -231,6 +266,12 @@ export function SensorDetail() {
     eventFilter === 'ALL'
       ? events
       : events.filter((event) => event.severity === eventFilter);
+
+  const episodeGroups = groupEventEpisodes(visibleEvents);
+
+  const currentEpisodes = episodeGroups.map((group) => group.current);
+
+  const previousEpisodes = episodeGroups.flatMap((group) => group.previous);
 
   function openEventAction(eventId: string, action: EventAction) {
     setSelectedEventId(eventId);
@@ -543,13 +584,36 @@ export function SensorDetail() {
           ) : null}
 
           {eventState.status === 'ready' && visibleEvents.length > 0 ? (
+            <div className="sensor-episode-summary">
+              <div>
+                <span>Current episodes</span>
+                <strong>{currentEpisodes.length}</strong>
+              </div>
+              <div>
+                <span>Previous episodes</span>
+                <strong>{previousEpisodes.length}</strong>
+              </div>
+              <small>Grouped by persistent condition identity</small>
+            </div>
+          ) : null}
+
+          {eventState.status === 'ready' && visibleEvents.length > 0 ? (
             <div className="sensor-event-list">
-              {visibleEvents.map((event) => {
+              {[...currentEpisodes, ...previousEpisodes].map((event) => {
                 const actionOpen = selectedEventId === event.id;
+
+                const previousEpisode = previousEpisodes.some(
+                  (episode) => episode.id === event.id,
+                );
+
                 return (
                   <article
                     key={event.id}
-                    className={`sensor-event-item is-${event.severity.toLowerCase()} is-${event.status.toLowerCase()}`}
+                    className={`sensor-event-item is-${event.severity.toLowerCase()} is-${event.status.toLowerCase()} ${
+                      previousEpisode
+                        ? 'is-previous-episode'
+                        : 'is-current-episode'
+                    }`}
                   >
                     <div className="sensor-event-time">
                       <time>{formatTime(event.occurredAt)} WIB</time>
@@ -566,7 +630,14 @@ export function SensorDetail() {
 
                       <div className="sensor-event-episode">
                         <header>
-                          <b>Episode {event.episodeNumber}</b>
+                          <div>
+                            <b>Episode {event.episodeNumber}</b>
+                            <small>
+                              {previousEpisode
+                                ? 'Previous episode'
+                                : 'Current episode'}
+                            </small>
+                          </div>
                           <span>{event.status}</span>
                         </header>
                         <dl>
