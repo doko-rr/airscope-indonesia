@@ -3,9 +3,13 @@
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
-import type { StationWithMeasurement } from '@/types/sensor';
+import type {
+  SensorEvent,
+  SensorEventSeverity,
+  StationWithMeasurement,
+} from '@/types/sensor';
 
-type AlertSeverity = 'CRITICAL' | 'WARNING' | 'CAUTION';
+type AlertSeverity = Exclude<SensorEventSeverity, 'INFO'>;
 type AlertKind = 'OFFLINE' | 'STALE' | 'ADVISORY' | 'DELAYED';
 type SeverityFilter = 'ALL' | AlertSeverity;
 type KindFilter = 'ALL' | AlertKind;
@@ -13,16 +17,22 @@ type AlertSort = 'SEVERITY' | 'OLDEST' | 'NEWEST' | 'STATION';
 
 interface ActiveAlert {
   id: string;
+  conditionKey: string;
+  episodeNumber: number;
   kind: AlertKind;
   severity: AlertSeverity;
+  status: 'ACTIVE' | 'ACKNOWLEDGED';
   title: string;
   detail: string;
+  occurredAt: string;
+  lastObservedAt: string;
   ageMinutes: number;
   station: StationWithMeasurement['station'];
 }
 
 interface AlertsDirectoryProps {
   stations: StationWithMeasurement[];
+  events: SensorEvent[];
   generatedAtMs: number;
 }
 
@@ -38,8 +48,15 @@ function ageInMinutes(observedAt: string, generatedAtMs: number): number {
   return Math.max(0, Math.floor((generatedAtMs - observed) / 60_000));
 }
 
-function normalizedStatus(item: StationWithMeasurement): string {
-  return String(item.station.status).toUpperCase();
+function eventKind(event: SensorEvent): AlertKind | null {
+  const kinds: Partial<Record<SensorEvent['type'], AlertKind>> = {
+    STATION_OFFLINE: 'OFFLINE',
+    TELEMETRY_STALE: 'STALE',
+    AIR_QUALITY_ADVISORY: 'ADVISORY',
+    TELEMETRY_DELAYED: 'DELAYED',
+  };
+
+  return kinds[event.type] ?? null;
 }
 
 function formatAge(minutes: number): string {
@@ -51,70 +68,42 @@ function formatAge(minutes: number): string {
 
 function buildAlerts(
   stations: StationWithMeasurement[],
+  events: SensorEvent[],
   generatedAtMs: number,
 ): ActiveAlert[] {
-  const alerts: ActiveAlert[] = [];
+  const stationsByCode = new Map(
+    stations.map((item) => [item.station.code, item.station]),
+  );
 
-  for (const item of stations) {
-    const status = normalizedStatus(item);
-    const ageMinutes = ageInMinutes(item.latest.observedAt, generatedAtMs);
-    const offline = status === 'OFFLINE';
-    const stale = ageMinutes > 20;
-    const delayed = ageMinutes >= 11 && ageMinutes <= 20;
-    const advisory = status === 'WARNING' || status === 'ADVISORY';
-
-    if (offline) {
-      alerts.push({
-        id: `${item.station.code}-offline`,
-        kind: 'OFFLINE',
-        severity: 'CRITICAL',
-        title: 'Station offline',
-        detail: 'The station is not reporting to the observation network.',
-        ageMinutes,
-        station: item.station,
-      });
-      continue;
+  return events.flatMap((event) => {
+    if (event.status === 'RESOLVED' || event.severity === 'INFO') {
+      return [];
     }
 
-    if (stale) {
-      alerts.push({
-        id: `${item.station.code}-stale`,
-        kind: 'STALE',
-        severity: 'CRITICAL',
-        title: 'Telemetry stale',
-        detail: 'The latest observation is more than 20 minutes old.',
-        ageMinutes,
-        station: item.station,
-      });
-      continue;
+    const station = stationsByCode.get(event.sensorCode);
+    const kind = eventKind(event);
+
+    if (!station || !kind) {
+      return [];
     }
 
-    if (advisory) {
-      alerts.push({
-        id: `${item.station.code}-advisory`,
-        kind: 'ADVISORY',
-        severity: 'WARNING',
-        title: 'Air-quality advisory',
-        detail: `PM2.5 is ${item.latest.measurements.pm25UgM3.toFixed(1)} µg/m³ and requires attention.`,
-        ageMinutes,
-        station: item.station,
-      });
-    }
-
-    if (delayed) {
-      alerts.push({
-        id: `${item.station.code}-delayed`,
-        kind: 'DELAYED',
-        severity: 'CAUTION',
-        title: 'Telemetry delayed',
-        detail: 'The latest observation is between 11 and 20 minutes old.',
-        ageMinutes,
-        station: item.station,
-      });
-    }
-  }
-
-  return alerts;
+    return [
+      {
+        id: event.id,
+        conditionKey: event.conditionKey,
+        episodeNumber: event.episodeNumber,
+        kind,
+        severity: event.severity,
+        status: event.status,
+        title: event.title,
+        detail: event.detail,
+        occurredAt: event.occurredAt,
+        lastObservedAt: event.lastObservedAt ?? event.occurredAt,
+        ageMinutes: ageInMinutes(event.occurredAt, generatedAtMs),
+        station,
+      },
+    ];
+  });
 }
 
 function enumParam<T extends string>(
@@ -128,6 +117,7 @@ function enumParam<T extends string>(
 
 export function AlertsDirectory({
   stations,
+  events,
   generatedAtMs,
 }: AlertsDirectoryProps) {
   const router = useRouter();
@@ -152,8 +142,8 @@ export function AlertsDirectory({
   );
 
   const alerts = useMemo(
-    () => buildAlerts(stations, generatedAtMs),
-    [generatedAtMs, stations],
+    () => buildAlerts(stations, events, generatedAtMs),
+    [events, generatedAtMs, stations],
   );
 
   const counts = useMemo(
@@ -176,6 +166,8 @@ export function AlertsDirectory({
           alert.title,
           alert.kind,
           alert.severity,
+          alert.status,
+          `episode ${alert.episodeNumber}`,
         ]
           .join(' ')
           .toLowerCase();
@@ -355,7 +347,11 @@ export function AlertsDirectory({
                 <div className="alert-copy">
                   <strong>{alert.title}</strong>
                   <span>{alert.detail}</span>
-                  <small>{formatAge(alert.ageMinutes)}</small>
+                  <div className="alert-episode-meta">
+                    <b>Episode {alert.episodeNumber}</b>
+                    <span>{alert.status}</span>
+                    <small>{formatAge(alert.ageMinutes)}</small>
+                  </div>
                 </div>
                 <div className="alert-station">
                   <strong>{alert.station.code}</strong>

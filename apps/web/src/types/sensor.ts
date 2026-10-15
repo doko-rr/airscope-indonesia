@@ -111,6 +111,8 @@ export type SensorEventType =
 
 export interface SensorEvent {
   id: string;
+  conditionKey: string;
+  episodeNumber: number;
   sensorCode: string;
   type: SensorEventType;
   severity: SensorEventSeverity;
@@ -118,6 +120,8 @@ export interface SensorEvent {
   title: string;
   detail: string;
   occurredAt: string;
+  lastObservedAt: string;
+  clearedAt: string | null;
   acknowledgedAt: string | null;
   acknowledgedBy: string | null;
   acknowledgmentNote: string | null;
@@ -125,6 +129,15 @@ export interface SensorEvent {
   resolvedBy: string | null;
   resolutionNote: string | null;
   source: 'DERIVED_SIMULATION';
+}
+
+export interface EventsResponse {
+  data: SensorEvent[];
+  metadata: {
+    count: number;
+    source: 'PERSISTED_DERIVED_SIMULATION';
+    severityOrder: SensorEventSeverity[];
+  };
 }
 
 export interface SensorEventsResponse {

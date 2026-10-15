@@ -1,4 +1,5 @@
 import type {
+  EventsResponse,
   LatestMeasurementResponse,
   SensorHistoryResponse,
   SensorsResponse,
@@ -23,6 +24,10 @@ async function fetchJson<T>(path: string): Promise<T> {
   }
 
   return response.json() as Promise<T>;
+}
+
+export async function getEvents(): Promise<EventsResponse> {
+  return fetchJson<EventsResponse>('/events');
 }
 
 export async function getSensors(): Promise<SensorsResponse> {
