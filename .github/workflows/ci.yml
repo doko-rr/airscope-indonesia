@@ -4,7 +4,10 @@ on:
   push:
     branches:
       - main
-      - chore/github-actions-ci
+      - 'test/**'
+      - 'feature/**'
+      - 'fix/**'
+      - 'chore/**'
   pull_request:
     branches:
       - main
