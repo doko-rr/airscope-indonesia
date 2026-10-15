@@ -3,32 +3,17 @@
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useMemo } from 'react';
-import type {
-  SensorEvent,
-  SensorEventSeverity,
-  StationWithMeasurement,
-} from '@/types/sensor';
+import {
+  buildAlerts,
+  SEVERITY_ORDER,
+  type AlertKind,
+  type AlertSeverity,
+} from '@/lib/events/alerts';
+import type { SensorEvent, StationWithMeasurement } from '@/types/sensor';
 
-type AlertSeverity = Exclude<SensorEventSeverity, 'INFO'>;
-type AlertKind = 'OFFLINE' | 'STALE' | 'ADVISORY' | 'DELAYED';
 type SeverityFilter = 'ALL' | AlertSeverity;
 type KindFilter = 'ALL' | AlertKind;
 type AlertSort = 'SEVERITY' | 'OLDEST' | 'NEWEST' | 'STATION';
-
-interface ActiveAlert {
-  id: string;
-  conditionKey: string;
-  episodeNumber: number;
-  kind: AlertKind;
-  severity: AlertSeverity;
-  status: 'ACTIVE' | 'ACKNOWLEDGED';
-  title: string;
-  detail: string;
-  occurredAt: string;
-  lastObservedAt: string;
-  ageMinutes: number;
-  station: StationWithMeasurement['station'];
-}
 
 interface AlertsDirectoryProps {
   stations: StationWithMeasurement[];
@@ -36,74 +21,11 @@ interface AlertsDirectoryProps {
   generatedAtMs: number;
 }
 
-const SEVERITY_ORDER: Record<AlertSeverity, number> = {
-  CRITICAL: 0,
-  WARNING: 1,
-  CAUTION: 2,
-};
-
-function ageInMinutes(observedAt: string, generatedAtMs: number): number {
-  const observed = new Date(observedAt).getTime();
-  if (!Number.isFinite(observed)) return Number.POSITIVE_INFINITY;
-  return Math.max(0, Math.floor((generatedAtMs - observed) / 60_000));
-}
-
-function eventKind(event: SensorEvent): AlertKind | null {
-  const kinds: Partial<Record<SensorEvent['type'], AlertKind>> = {
-    STATION_OFFLINE: 'OFFLINE',
-    TELEMETRY_STALE: 'STALE',
-    AIR_QUALITY_ADVISORY: 'ADVISORY',
-    TELEMETRY_DELAYED: 'DELAYED',
-  };
-
-  return kinds[event.type] ?? null;
-}
-
 function formatAge(minutes: number): string {
   if (!Number.isFinite(minutes)) return 'Unknown age';
   if (minutes < 1) return 'Observed less than 1 minute ago';
   if (minutes < 60) return `Observed ${minutes} minutes ago`;
   return `Observed ${Math.floor(minutes / 60)}h ${minutes % 60}m ago`;
-}
-
-function buildAlerts(
-  stations: StationWithMeasurement[],
-  events: SensorEvent[],
-  generatedAtMs: number,
-): ActiveAlert[] {
-  const stationsByCode = new Map(
-    stations.map((item) => [item.station.code, item.station]),
-  );
-
-  return events.flatMap((event) => {
-    if (event.status === 'RESOLVED' || event.severity === 'INFO') {
-      return [];
-    }
-
-    const station = stationsByCode.get(event.sensorCode);
-    const kind = eventKind(event);
-
-    if (!station || !kind) {
-      return [];
-    }
-
-    return [
-      {
-        id: event.id,
-        conditionKey: event.conditionKey,
-        episodeNumber: event.episodeNumber,
-        kind,
-        severity: event.severity,
-        status: event.status,
-        title: event.title,
-        detail: event.detail,
-        occurredAt: event.occurredAt,
-        lastObservedAt: event.lastObservedAt ?? event.occurredAt,
-        ageMinutes: ageInMinutes(event.occurredAt, generatedAtMs),
-        station,
-      },
-    ];
-  });
 }
 
 function enumParam<T extends string>(
