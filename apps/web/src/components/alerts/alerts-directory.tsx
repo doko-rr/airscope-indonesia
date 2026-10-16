@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   buildAlerts,
   SEVERITY_ORDER,
@@ -47,6 +47,8 @@ export function AlertsDirectory({
   const searchParams = useSearchParams();
 
   const query = searchParams.get('q') ?? '';
+  const [searchInput, setSearchInput] = useState(query);
+
   const severity = enumParam<SeverityFilter>(
     searchParams.get('severity'),
     ['ALL', 'CRITICAL', 'WARNING', 'CAUTION'],
@@ -63,6 +65,39 @@ export function AlertsDirectory({
     'SEVERITY',
   );
 
+  useEffect(() => {
+    setSearchInput(query);
+  }, [query]);
+
+  useEffect(() => {
+    if (searchInput === query) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      const normalizedSearch = searchInput.trim();
+
+      if (normalizedSearch) {
+        params.set('q', normalizedSearch);
+      } else {
+        params.delete('q');
+      }
+
+      router.replace(
+        `${pathname}${params.size ? `?${params.toString()}` : ''}`,
+        {
+          scroll: false,
+        },
+      );
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [pathname, query, router, searchInput, searchParams]);
+
   const alerts = useMemo(
     () => buildAlerts(stations, events, generatedAtMs),
     [events, generatedAtMs, stations],
@@ -78,7 +113,7 @@ export function AlertsDirectory({
   );
 
   const visibleAlerts = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = searchInput.trim().toLowerCase();
     return alerts
       .filter((alert) => {
         const searchable = [
@@ -110,7 +145,7 @@ export function AlertsDirectory({
           a.station.code.localeCompare(b.station.code)
         );
       });
-  }, [alerts, kind, query, severity, sort]);
+  }, [alerts, kind, searchInput, severity, sort]);
 
   function updateParam(name: string, value: string, defaultValue = 'ALL') {
     const params = new URLSearchParams(searchParams.toString());
@@ -122,11 +157,17 @@ export function AlertsDirectory({
   }
 
   function clearFilters() {
-    router.replace(pathname, { scroll: false });
+    setSearchInput('');
+    router.replace(pathname, {
+      scroll: false,
+    });
   }
 
   const hasFilters = Boolean(
-    query || severity !== 'ALL' || kind !== 'ALL' || sort !== 'SEVERITY',
+    searchInput.trim() ||
+    severity !== 'ALL' ||
+    kind !== 'ALL' ||
+    sort !== 'SEVERITY',
   );
 
   return (
@@ -181,8 +222,8 @@ export function AlertsDirectory({
         <label className="alerts-search">
           <span>Search</span>
           <input
-            value={query}
-            onChange={(event) => updateParam('q', event.target.value, '')}
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Station, type, severity, profile"
           />
         </label>
