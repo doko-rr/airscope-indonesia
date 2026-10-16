@@ -12,16 +12,16 @@ services:
       DATABASE_URL: file:/data/airscope.db
       FRONTEND_URL: http://localhost:3000
     ports:
-      - "4000:4000"
+      - '4000:4000'
     volumes:
       - airscope-data:/data
     healthcheck:
       test:
         [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:4000/api/v1/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/api/v1/ready').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
         ]
       interval: 10s
       timeout: 3s
@@ -42,7 +42,7 @@ services:
       PORT: 3000
       API_INTERNAL_URL: http://api:4000/api/v1
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       api:
         condition: service_healthy
