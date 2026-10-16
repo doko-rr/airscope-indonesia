@@ -34,6 +34,10 @@ RUN pnpm --filter api deploy \
 
 FROM node:24-bookworm-slim AS runner
 
+RUN apt-get update \
+  && apt-get install --yes --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
+
 ENV NODE_ENV=production
 ENV PORT=4000
 ENV DATABASE_URL=file:/data/airscope.db
