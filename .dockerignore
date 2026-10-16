@@ -1,0 +1,49 @@
+# Version control and editor files
+.git
+.github
+.vscode
+.idea
+
+# Dependencies
+node_modules
+**/node_modules
+.pnpm-store
+**/.pnpm-store
+
+# Build output
+.next
+**/.next
+dist
+**/dist
+.turbo
+**/.turbo
+coverage
+**/coverage
+
+# Environment files
+.env
+.env.*
+**/.env
+**/.env.*
+!**/.env.example
+
+# Local databases
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Logs and caches
+*.log
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+
+# Local backups
+*.before-*
+*.bak
+*.backup
+
+# Temporary files
+tmp
+temp
