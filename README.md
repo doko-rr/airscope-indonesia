@@ -454,9 +454,41 @@ AirScope Indonesia masih aktif dikembangkan. Interface, migration, dan kebutuhan
 
 ## Docker Deployment
 
-AirScope Indonesia includes production-oriented Docker images for the API and Web application, plus a Docker Compose stack with a persistent SQLite volume.
+AirScope Indonesia includes production-oriented Docker images for the API and
+Web application, together with a Docker Compose stack and a persistent SQLite
+volume.
 
 ```bash
+docker compose config --quiet
 docker compose build
 docker compose up --detach
 ```
+
+Open:
+
+- Web: `http://localhost:3000`
+- API: `http://localhost:4000/api/v1`
+- API readiness: `http://localhost:4000/api/v1/ready`
+
+Inspect the running stack:
+
+```bash
+docker compose ps
+docker compose logs --follow
+```
+
+Stop the stack while preserving SQLite data:
+
+```bash
+docker compose down
+```
+
+Delete containers and the persistent database volume:
+
+```bash
+docker compose down --volumes
+```
+
+See docs/DEPLOYMENT.md for environment variables,
+container networking, health checks, persistence, migrations, logs, operating
+procedures, and troubleshooting.
