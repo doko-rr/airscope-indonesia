@@ -451,3 +451,12 @@ Lisensi repository belum ditentukan. Tambahkan lisensi eksplisit sebelum distrib
 ## Catatan
 
 AirScope Indonesia masih aktif dikembangkan. Interface, migration, dan kebutuhan environment dapat berubah hingga workflow Event Episodes dan integration test selesai difinalkan.
+
+## Docker Deployment
+
+AirScope Indonesia includes production-oriented Docker images for the API and Web application, plus a Docker Compose stack with a persistent SQLite volume.
+
+```bash
+docker compose build
+docker compose up --detach
+```
