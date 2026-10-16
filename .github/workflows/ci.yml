@@ -56,6 +56,11 @@ jobs:
     name: API tests and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      PORT: 4000
+      DATABASE_URL: file:./prisma/ci.db
+      FRONTEND_URL: http://localhost:3000
 
     steps:
       - name: Check out repository
@@ -80,13 +85,9 @@ jobs:
 
       - name: Apply database migrations
         run: pnpm --filter api db:migrate:deploy
-        env:
-          DATABASE_URL: file:./prisma/ci.db
 
       - name: Check migration status
         run: pnpm --filter api db:status
-        env:
-          DATABASE_URL: file:./prisma/ci.db
 
       - name: Run API unit tests
         run: pnpm --filter api test
