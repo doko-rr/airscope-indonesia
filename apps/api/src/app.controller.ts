@@ -14,4 +14,9 @@ export class AppController {
   getHealth() {
     return this.appService.getHealth();
   }
+
+  @Get('ready')
+  getReadiness() {
+    return this.appService.getReadiness();
+  }
 }
