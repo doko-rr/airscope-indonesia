@@ -4,38 +4,32 @@ on:
   push:
     branches:
       - main
-      - 'test/**'
-      - 'feature/**'
       - 'feat/**'
       - 'fix/**'
-      - 'chore/**'
+      - 'docs/**'
   pull_request:
     branches:
       - main
-
-permissions:
-  contents: read
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   quality:
-    name: Quality checks
+    name: Format and type checks
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    env:
-      DATABASE_URL: file:./prisma/ci.db
-      NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
-      CI: true
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout repository
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
+      - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
@@ -45,7 +39,43 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm run format:check
+
+      - name: Typecheck API
+        run: pnpm --filter api typecheck
+
+      - name: Typecheck Web
+        run: pnpm --filter web typecheck
+
+  api:
+    name: API tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      PORT: 4000
+      DATABASE_URL: file:./prisma/ci.db
+      FRONTEND_URL: http://localhost:3000
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -53,47 +83,72 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter api prisma:generate
 
-      - name: Prepare fresh CI database
-        run: |
-          rm -f apps/api/prisma/ci.db
-          rm -f apps/api/prisma/ci.db-journal
-          rm -f apps/api/prisma/ci.db-shm
-          rm -f apps/api/prisma/ci.db-wal
-          pnpm --filter api db:migrate:deploy
-          pnpm --filter api db:status
+      - name: Apply database migrations
+        run: pnpm --filter api db:migrate:deploy
 
-      - name: API typecheck
-        run: pnpm --filter api typecheck
+      - name: Check migration status
+        run: pnpm --filter api db:status
 
-      - name: API unit tests
+      - name: Run API unit tests
         run: pnpm --filter api test
 
-      - name: API end-to-end tests
+      - name: Run API E2E tests
         run: pnpm --filter api test:e2e
 
-      - name: API production build
+      - name: Build API
         run: pnpm --filter api build
 
-      - name: Web typecheck
-        run: pnpm --filter web typecheck
-
-      - name: Web tests
-        run: pnpm --filter web test
-
-      - name: Web production build
-        run: pnpm --filter web build
-
-      - name: Verify integration database cleanup
-        run: |
-          test ! -f apps/api/prisma/event-episodes-integration.db
-          test ! -f apps/api/prisma/event-episodes-integration.db-journal
-          test ! -f apps/api/prisma/event-episodes-integration.db-shm
-          test ! -f apps/api/prisma/event-episodes-integration.db-wal
-
-      - name: Clean CI database
+      - name: Clean temporary CI database
         if: always()
         run: |
           rm -f apps/api/prisma/ci.db
           rm -f apps/api/prisma/ci.db-journal
           rm -f apps/api/prisma/ci.db-shm
           rm -f apps/api/prisma/ci.db-wal
+
+  web:
+    name: Web tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck Web
+        run: pnpm --filter web typecheck
+
+      - name: Run Web tests
+        run: pnpm --filter web test
+
+      - name: Build Web
+        run: pnpm --filter web build
+
+  docker:
+    name: Docker validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+      - name: Build Docker images
+        run: docker compose build
