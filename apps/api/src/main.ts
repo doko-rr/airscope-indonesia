@@ -1,8 +1,10 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { loadEnvironment } from './config/environment';
 
 async function bootstrap(): Promise<void> {
+  const environment = loadEnvironment();
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api/v1');
@@ -16,15 +18,15 @@ async function bootstrap(): Promise<void> {
   );
 
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+    origin: environment.frontendUrl,
     credentials: true,
   });
 
-  const port = Number(process.env.PORT ?? 4000);
+  await app.listen(environment.port);
 
-  await app.listen(port);
-
-  console.log(`AirScope API running at http://localhost:${port}/api/v1`);
+  console.log(
+    `AirScope API running at http://localhost:${environment.port}/api/v1`,
+  );
 }
 
 void bootstrap();
