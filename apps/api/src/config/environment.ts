@@ -3,6 +3,10 @@ export interface ApplicationEnvironment {
   port: number;
   databaseUrl: string;
   frontendUrl: string;
+  mqttEnabled: boolean;
+  mqttUrl: string;
+  mqttClientId: string;
+  mqttTopicPrefix: string;
 }
 
 const supportedNodeEnvironments = [
@@ -10,6 +14,10 @@ const supportedNodeEnvironments = [
   'test',
   'production',
 ] as const;
+
+const mqttClientIdPattern = /^[a-zA-Z0-9._:-]{1,128}$/;
+
+const mqttTopicSegmentPattern = /^[a-zA-Z0-9._-]+$/;
 
 function parseNodeEnvironment(
   value: string | undefined,
@@ -86,15 +94,94 @@ function parseFrontendUrl(
   return url.origin;
 }
 
+function parseMqttEnabled(value: string | undefined): boolean {
+  const normalized = value?.trim().toLowerCase() ?? 'false';
+
+  if (normalized === 'true') {
+    return true;
+  }
+
+  if (normalized === 'false') {
+    return false;
+  }
+
+  throw new Error('MQTT_ENABLED must be true or false.');
+}
+
+function parseMqttUrl(value: string | undefined, enabled: boolean): string {
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    if (enabled) {
+      throw new Error('MQTT_URL is required when MQTT is enabled.');
+    }
+
+    return 'mqtt://localhost:1883';
+  }
+
+  let url: URL;
+
+  try {
+    url = new URL(normalized);
+  } catch {
+    throw new Error('MQTT_URL must be a valid absolute URL.');
+  }
+
+  if (url.protocol !== 'mqtt:' && url.protocol !== 'mqtts:') {
+    throw new Error('MQTT_URL must use mqtt or mqtts.');
+  }
+
+  if (!url.hostname) {
+    throw new Error('MQTT_URL must include a hostname.');
+  }
+
+  if ((url.pathname !== '' && url.pathname !== '/') || url.search || url.hash) {
+    throw new Error('MQTT_URL must not contain a path, query, or fragment.');
+  }
+
+  return normalized.replace(/\/$/, '');
+}
+
+function parseMqttClientId(value: string | undefined): string {
+  const normalized = value?.trim() || 'airscope-api';
+
+  if (mqttClientIdPattern.test(normalized) === false) {
+    throw new Error('MQTT_CLIENT_ID has an invalid format.');
+  }
+
+  return normalized;
+}
+
+function parseMqttTopicPrefix(value: string | undefined): string {
+  const normalized = (value?.trim() || 'airscope/v1').replace(/^\/+|\/+$/g, '');
+
+  const segments = normalized.split('/');
+
+  if (
+    normalized.length === 0 ||
+    segments.some((segment) => mqttTopicSegmentPattern.test(segment) === false)
+  ) {
+    throw new Error('MQTT_TOPIC_PREFIX has an invalid format.');
+  }
+
+  return normalized;
+}
+
 export function loadEnvironment(
   source: NodeJS.ProcessEnv = process.env,
 ): ApplicationEnvironment {
   const nodeEnv = parseNodeEnvironment(source.NODE_ENV);
+
+  const mqttEnabled = parseMqttEnabled(source.MQTT_ENABLED);
 
   return {
     nodeEnv,
     port: parsePort(source.PORT),
     databaseUrl: parseDatabaseUrl(source.DATABASE_URL, nodeEnv),
     frontendUrl: parseFrontendUrl(source.FRONTEND_URL, nodeEnv),
+    mqttEnabled,
+    mqttUrl: parseMqttUrl(source.MQTT_URL, mqttEnabled),
+    mqttClientId: parseMqttClientId(source.MQTT_CLIENT_ID),
+    mqttTopicPrefix: parseMqttTopicPrefix(source.MQTT_TOPIC_PREFIX),
   };
 }

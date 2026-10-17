@@ -11,6 +11,10 @@ services:
       PORT: 4000
       DATABASE_URL: file:/data/airscope.db
       FRONTEND_URL: http://localhost:3000
+      MQTT_ENABLED: 'false'
+      MQTT_URL: mqtt://mqtt:1883
+      MQTT_CLIENT_ID: airscope-api
+      MQTT_TOPIC_PREFIX: airscope/v1
     ports:
       - '4000:4000'
     volumes:
