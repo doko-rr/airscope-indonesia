@@ -1,6 +1,25 @@
 name: airscope-indonesia
 
 services:
+  mqtt:
+    image: eclipse-mosquitto:2.0.22
+    ports:
+      - '1883:1883'
+    volumes:
+      - ./infrastructure/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          "mosquitto_sub -h 127.0.0.1 -p 1883 -t '$$SYS/broker/version' -C 1 -W 5 >/dev/null 2>&1",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 5s
+      retries: 5
+    restart: unless-stopped
+
   api:
     build:
       context: .
@@ -54,3 +73,4 @@ services:
 
 volumes:
   airscope-data:
+  mosquitto-data:
