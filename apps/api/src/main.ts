@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { loadEnvironment } from './config/environment';
@@ -7,6 +7,7 @@ async function bootstrap(): Promise<void> {
   const environment = loadEnvironment();
   const app = await NestFactory.create(AppModule);
 
+  app.enableShutdownHooks();
   app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
@@ -24,7 +25,9 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(environment.port);
 
-  console.log(
+  const logger = new Logger('Bootstrap');
+
+  logger.log(
     `AirScope API running at http://localhost:${environment.port}/api/v1`,
   );
 }
