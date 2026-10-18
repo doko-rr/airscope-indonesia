@@ -10,9 +10,10 @@ import { RequestLoggingMiddleware } from './common/observability/request-logging
 import { PrismaModule } from './database/prisma.module';
 import { EventsModule } from './modules/events/events.module';
 import { SensorsModule } from './modules/sensors/sensors.module';
+import { TelemetryModule } from './modules/telemetry/telemetry.module';
 
 @Module({
-  imports: [PrismaModule, SensorsModule, EventsModule],
+  imports: [PrismaModule, SensorsModule, EventsModule, TelemetryModule],
   controllers: [AppController],
   providers: [AppService],
 })
