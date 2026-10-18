@@ -29,7 +29,8 @@
     "db:status": "prisma migrate status",
     "db:studio": "prisma studio",
     "db:setup": "prisma generate && prisma migrate deploy",
-    "test:episodes:integration": "vitest run --config ./vitest.config.e2e.ts test/events-episodes.e2e-spec.ts"
+    "test:episodes:integration": "vitest run --config ./vitest.config.e2e.ts test/events-episodes.e2e-spec.ts",
+    "telemetry:simulate": "node scripts/mqtt-device-simulator.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
