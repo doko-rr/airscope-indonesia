@@ -1,14 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { TelemetryService } from '../telemetry/telemetry.service';
 import { SENSOR_STATIONS } from './data/sensor-stations.data';
 import { simulateLatestMeasurement } from './simulation/sensor-simulator';
 import {
-  SensorHistoryResult,
-  SensorMeasurement,
-  SensorStation,
+  type SensorHistoryResult,
+  type SensorMeasurement,
+  type SensorStation,
 } from './types/sensor.types';
 
 @Injectable()
 export class SensorsService {
+  constructor(private readonly telemetryService: TelemetryService) {}
+
   findAll(): SensorStation[] {
     return SENSOR_STATIONS;
   }
@@ -74,6 +77,27 @@ export class SensorsService {
   getLatestMeasurement(code: string): SensorMeasurement {
     const station = this.findByCode(code);
 
-    return simulateLatestMeasurement(station);
+    const telemetry = this.telemetryService.getLatest(station.code);
+
+    if (!telemetry) {
+      return simulateLatestMeasurement(station);
+    }
+
+    return {
+      stationCode: telemetry.stationCode,
+      observedAt: telemetry.observedAt,
+      source: 'MQTT',
+      messageId: telemetry.messageId,
+      measurements: {
+        ...telemetry.measurements,
+      },
+      device: {
+        ...telemetry.device,
+      },
+      quality: {
+        score: 100,
+        label: 'GOOD',
+      },
+    };
   }
 }

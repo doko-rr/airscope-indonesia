@@ -32,8 +32,9 @@ export interface SensorStation {
 export interface SensorMeasurement {
   stationCode: string;
   observedAt: string;
-  source: 'SIMULATION';
-  simulationModel: string;
+  source: 'SIMULATION' | 'MQTT';
+  simulationModel?: string;
+  messageId?: string;
   measurements: {
     pm25UgM3: number;
     pm10UgM3: number;
@@ -50,7 +51,7 @@ export interface SensorMeasurement {
     status: SensorStatus;
     batteryVoltage: number;
     rssiDbm: number;
-    network: 'LTE';
+    network: string;
     firmware: string;
   };
   quality: {

@@ -1,5 +1,6 @@
 import type { PrismaService } from '../../database/prisma.service';
 import { SensorsService } from '../sensors/sensors.service';
+import type { TelemetryService } from '../telemetry/telemetry.service';
 import { EventsService } from './events.service';
 
 type StoredRecord = Record<string, any>;
@@ -116,7 +117,7 @@ function createPrismaMock() {
 }
 
 function createMutableSensorsService() {
-  const service = new SensorsService();
+  const service = createSensorsService();
   let station = service.findByCode('BDG-AQ-003');
   const originalFindByCode = service.findByCode.bind(service);
   const originalFindAll = service.findAll.bind(service);
@@ -136,12 +137,20 @@ function createMutableSensorsService() {
   };
 }
 
+function createSensorsService(): SensorsService {
+  const telemetryService = {
+    getLatest: () => undefined,
+  } as unknown as TelemetryService;
+
+  return new SensorsService(telemetryService);
+}
+
 describe('EventsService persistence', () => {
   const referenceDate = new Date('2026-10-12T04:30:00.000Z');
 
   it('keeps one episode across repeated active reads', async () => {
     const { prisma, records } = createPrismaMock();
-    const service = new EventsService(new SensorsService(), prisma);
+    const service = new EventsService(createSensorsService(), prisma);
 
     const first = await service.findBySensorCode('BDG-AQ-003', referenceDate);
     const second = await service.findBySensorCode('BDG-AQ-003', referenceDate);
@@ -158,7 +167,7 @@ describe('EventsService persistence', () => {
 
   it('keeps occurredAt stable while lastObservedAt advances', async () => {
     const { prisma, records } = createPrismaMock();
-    const service = new EventsService(new SensorsService(), prisma);
+    const service = new EventsService(createSensorsService(), prisma);
 
     const first = await service.findBySensorCode('BDG-AQ-003', referenceDate);
     const firstStored = [...records.values()][0];
@@ -176,7 +185,7 @@ describe('EventsService persistence', () => {
 
   it('does not reopen a manually resolved episode while condition remains', async () => {
     const { prisma, records } = createPrismaMock();
-    const service = new EventsService(new SensorsService(), prisma);
+    const service = new EventsService(createSensorsService(), prisma);
 
     const first = await service.findBySensorCode('BDG-AQ-003', referenceDate);
     await service.resolve(first[0].id, {
@@ -227,7 +236,7 @@ describe('EventsService persistence', () => {
 
   it('returns no records for a healthy station with no history', async () => {
     const { prisma } = createPrismaMock();
-    const service = new EventsService(new SensorsService(), prisma);
+    const service = new EventsService(createSensorsService(), prisma);
 
     await expect(
       service.findBySensorCode('BDG-AQ-001', referenceDate),
@@ -236,7 +245,7 @@ describe('EventsService persistence', () => {
 
   it('persists events from the global synchronization', async () => {
     const { prisma, records } = createPrismaMock();
-    const service = new EventsService(new SensorsService(), prisma);
+    const service = new EventsService(createSensorsService(), prisma);
 
     const events = await service.findAll(referenceDate);
 
