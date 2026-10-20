@@ -46,6 +46,13 @@ jobs:
       - name: Check formatting
         run: pnpm run format:check
 
+      - name: Generate Prisma Client for typecheck
+
+        run: pnpm --filter api prisma:generate
+
+        env:
+          DATABASE_URL: file:./prisma/ci-typecheck.db
+
       - name: Typecheck API
         run: pnpm --filter api typecheck
 
