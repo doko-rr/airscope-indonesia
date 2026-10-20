@@ -37,3 +37,34 @@ model AlertEvent {
   @@index([status, severity])
   @@index([type, status])
 }
+
+model TelemetryMeasurement {
+  id            String   @id @default(cuid())
+  messageId     String   @unique
+  schemaVersion Int
+  stationCode   String
+  observedAt    DateTime
+  source        String   @default("MQTT")
+
+  pm25UgM3     Float
+  pm10UgM3     Float
+  coPpm        Float
+  co2Ppm       Float
+  no2Ppb       Float
+  so2Ppb       Float
+  o3Ppb        Float
+  temperatureC Float
+  humidityPct  Float
+  pressureHpa  Float
+
+  deviceStatus   String
+  batteryVoltage Float
+  rssiDbm        Int
+  network        String
+  firmware       String
+
+  createdAt DateTime @default(now())
+
+  @@index([stationCode, observedAt])
+  @@index([observedAt])
+}
