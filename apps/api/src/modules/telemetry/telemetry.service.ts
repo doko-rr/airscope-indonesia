@@ -1,9 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   decodeTelemetryPayloadV1,
   TelemetryValidationError,
   type TelemetryPayloadV1,
 } from './telemetry-contract';
+import {
+  TELEMETRY_REPOSITORY,
+  type PersistedTelemetryInput,
+  type TelemetryRepository,
+} from './telemetry.repository';
 import { parseTelemetryTopic } from './telemetry-topic';
 
 export type TelemetryIngestionStatus = 'ACCEPTED' | 'DUPLICATE' | 'STALE';
@@ -23,16 +28,19 @@ export class TelemetryTopicError extends Error {
 @Injectable()
 export class TelemetryService {
   private readonly logger = new Logger(TelemetryService.name);
-
   private readonly latestByStation = new Map<string, TelemetryPayloadV1>();
-
   private readonly processedMessageIds = new Set<string>();
 
-  ingest(
+  constructor(
+    @Inject(TELEMETRY_REPOSITORY)
+    private readonly repository: TelemetryRepository,
+  ) {}
+
+  async ingest(
     topic: string,
     message: Buffer | string,
     topicPrefix = 'airscope/v1',
-  ): TelemetryIngestionResult {
+  ): Promise<TelemetryIngestionResult> {
     const parsedTopic = parseTelemetryTopic(topic, topicPrefix);
 
     if (!parsedTopic) {
@@ -47,7 +55,12 @@ export class TelemetryService {
       );
     }
 
-    if (this.processedMessageIds.has(payload.messageId)) {
+    const persistence = await this.repository.persist(
+      this.toPersistedInput(payload),
+    );
+
+    if (persistence.status === 'DUPLICATE') {
+      this.processedMessageIds.add(payload.messageId);
       this.logger.warn(
         JSON.stringify({
           event: 'mqtt_telemetry_duplicate',
@@ -57,10 +70,7 @@ export class TelemetryService {
         }),
       );
 
-      return {
-        status: 'DUPLICATE',
-        payload,
-      };
+      return { status: 'DUPLICATE', payload };
     }
 
     const current = this.latestByStation.get(payload.stationCode);
@@ -70,7 +80,6 @@ export class TelemetryService {
       Date.parse(payload.observedAt) < Date.parse(current.observedAt)
     ) {
       this.processedMessageIds.add(payload.messageId);
-
       this.logger.warn(
         JSON.stringify({
           event: 'mqtt_telemetry_stale',
@@ -82,16 +91,11 @@ export class TelemetryService {
         }),
       );
 
-      return {
-        status: 'STALE',
-        payload,
-      };
+      return { status: 'STALE', payload };
     }
 
     this.processedMessageIds.add(payload.messageId);
-
     this.latestByStation.set(payload.stationCode, payload);
-
     this.logger.log(
       JSON.stringify({
         event: 'mqtt_telemetry_accepted',
@@ -102,10 +106,7 @@ export class TelemetryService {
       }),
     );
 
-    return {
-      status: 'ACCEPTED',
-      payload,
-    };
+    return { status: 'ACCEPTED', payload };
   }
 
   getLatest(stationCode: string): TelemetryPayloadV1 | undefined {
@@ -123,6 +124,15 @@ export class TelemetryService {
   clear(): void {
     this.latestByStation.clear();
     this.processedMessageIds.clear();
+  }
+
+  private toPersistedInput(
+    payload: TelemetryPayloadV1,
+  ): PersistedTelemetryInput {
+    return {
+      ...payload,
+      source: 'MQTT',
+    };
   }
 }
 

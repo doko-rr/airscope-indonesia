@@ -15,7 +15,6 @@ import { buildTelemetrySubscription } from './telemetry-topic';
 @Injectable()
 export class MqttTelemetryClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(MqttTelemetryClient.name);
-
   private client: MqttClient | undefined;
   private environment: ApplicationEnvironment | undefined;
 
@@ -23,16 +22,10 @@ export class MqttTelemetryClient implements OnModuleInit, OnModuleDestroy {
 
   onModuleInit(): void {
     const environment = loadEnvironment();
-
     this.environment = environment;
 
     if (!environment.mqttEnabled) {
-      this.logger.log(
-        JSON.stringify({
-          event: 'mqtt_client_disabled',
-        }),
-      );
-
+      this.logger.log(JSON.stringify({ event: 'mqtt_client_disabled' }));
       return;
     }
 
@@ -42,19 +35,15 @@ export class MqttTelemetryClient implements OnModuleInit, OnModuleDestroy {
       reconnectPeriod: 5_000,
       connectTimeout: 10_000,
     };
-
     const client = connect(environment.mqttUrl, options);
-
     this.client = client;
 
     client.on('connect', () => {
       void this.subscribe(client);
     });
-
     client.on('message', (topic, message) => {
-      this.handleMessage(topic, message);
+      void this.handleMessage(topic, message);
     });
-
     client.on('reconnect', () => {
       this.logger.warn(
         JSON.stringify({
@@ -63,41 +52,22 @@ export class MqttTelemetryClient implements OnModuleInit, OnModuleDestroy {
         }),
       );
     });
-
     client.on('error', (error) => {
       this.logger.error(
-        JSON.stringify({
-          event: 'mqtt_client_error',
-          message: error.message,
-        }),
+        JSON.stringify({ event: 'mqtt_client_error', message: error.message }),
       );
     });
-
     client.on('close', () => {
-      this.logger.warn(
-        JSON.stringify({
-          event: 'mqtt_client_closed',
-        }),
-      );
+      this.logger.warn(JSON.stringify({ event: 'mqtt_client_closed' }));
     });
   }
 
   async onModuleDestroy(): Promise<void> {
     const client = this.client;
-
-    if (!client) {
-      return;
-    }
-
+    if (!client) return;
     this.client = undefined;
-
     await client.endAsync();
-
-    this.logger.log(
-      JSON.stringify({
-        event: 'mqtt_client_disconnected',
-      }),
-    );
+    this.logger.log(JSON.stringify({ event: 'mqtt_client_disconnected' }));
   }
 
   isEnabled(): boolean {
@@ -110,18 +80,11 @@ export class MqttTelemetryClient implements OnModuleInit, OnModuleDestroy {
 
   private async subscribe(client: MqttClient): Promise<void> {
     const environment = this.environment;
-
-    if (!environment) {
-      return;
-    }
-
+    if (!environment) return;
     const topic = buildTelemetrySubscription(environment.mqttTopicPrefix);
 
     try {
-      await client.subscribeAsync(topic, {
-        qos: 1,
-      });
-
+      await client.subscribeAsync(topic, { qos: 1 });
       this.logger.log(
         JSON.stringify({
           event: 'mqtt_client_subscribed',
@@ -140,15 +103,16 @@ export class MqttTelemetryClient implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private handleMessage(topic: string, message: Buffer): void {
+  private async handleMessage(topic: string, message: Buffer): Promise<void> {
     const environment = this.environment;
-
-    if (!environment) {
-      return;
-    }
+    if (!environment) return;
 
     try {
-      this.telemetryService.ingest(topic, message, environment.mqttTopicPrefix);
+      await this.telemetryService.ingest(
+        topic,
+        message,
+        environment.mqttTopicPrefix,
+      );
     } catch (error) {
       this.logger.error(
         JSON.stringify({

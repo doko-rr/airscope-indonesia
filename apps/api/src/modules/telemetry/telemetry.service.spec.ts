@@ -1,11 +1,23 @@
 import { Logger } from '@nestjs/common';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  type MockedFunction,
+  vi,
+} from 'vitest';
+import type { TelemetryPayloadV1 } from './telemetry-contract';
+import type {
+  PersistedTelemetryRecord,
+  TelemetryRepository,
+} from './telemetry.repository';
 import {
   TelemetryService,
   TelemetryTopicError,
   TelemetryValidationError,
 } from './telemetry.service';
-import type { TelemetryPayloadV1 } from './telemetry-contract';
 
 function createPayload(
   overrides: Partial<TelemetryPayloadV1> = {},
@@ -42,171 +54,179 @@ function encode(payload: TelemetryPayloadV1): Buffer {
   return Buffer.from(JSON.stringify(payload), 'utf8');
 }
 
+function record(payload: TelemetryPayloadV1): PersistedTelemetryRecord {
+  return {
+    ...payload,
+    id: 'telemetry-1',
+    source: 'MQTT',
+    createdAt: '2026-10-17T14:00:01.000Z',
+  };
+}
+
 describe('TelemetryService', () => {
   let service: TelemetryService;
+  let repository: TelemetryRepository;
+  let persist: MockedFunction<TelemetryRepository['persist']>;
 
   beforeEach(() => {
     vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
-
     vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-
-    service = new TelemetryService();
+    persist = vi.fn<TelemetryRepository['persist']>(async (input) => ({
+      status: 'CREATED' as const,
+      record: {
+        ...input,
+        id: 'telemetry-1',
+        createdAt: new Date().toISOString(),
+      },
+    }));
+    repository = {
+      persist,
+      findLatest: vi.fn(async () => null),
+      findHistory: vi.fn(async () => []),
+    };
+    service = new TelemetryService(repository);
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+  afterEach(() => vi.restoreAllMocks());
 
-  it('accepts and stores valid telemetry', () => {
+  it('persists before accepting valid telemetry', async () => {
     const payload = createPayload();
-
-    const result = service.ingest(
+    const result = await service.ingest(
       'airscope/v1/stations/BDG-AQ-001/telemetry',
       encode(payload),
     );
 
-    expect(result).toEqual({
-      status: 'ACCEPTED',
-      payload,
-    });
-
+    expect(persist).toHaveBeenCalledWith({ ...payload, source: 'MQTT' });
+    expect(result).toEqual({ status: 'ACCEPTED', payload });
     expect(service.getLatest('BDG-AQ-001')).toEqual(payload);
-
-    expect(service.getStationCount()).toBe(1);
   });
 
-  it('normalizes station code lookup', () => {
+  it('normalizes station code lookup', async () => {
     const payload = createPayload();
-
-    service.ingest(
+    await service.ingest(
       'airscope/v1/stations/BDG-AQ-001/telemetry',
       encode(payload),
     );
-
     expect(service.getLatest(' bdg-aq-001 ')).toEqual(payload);
   });
 
-  it('returns duplicate for an existing message ID', () => {
+  it('returns duplicate without replacing cache', async () => {
     const payload = createPayload();
-
-    service.ingest(
+    persist.mockResolvedValueOnce({
+      status: 'DUPLICATE',
+      record: record(payload),
+    });
+    const result = await service.ingest(
       'airscope/v1/stations/BDG-AQ-001/telemetry',
       encode(payload),
     );
-
-    const duplicate = service.ingest(
-      'airscope/v1/stations/BDG-AQ-001/telemetry',
-      encode(payload),
-    );
-
-    expect(duplicate.status).toBe('DUPLICATE');
-
-    expect(service.getStationCount()).toBe(1);
+    expect(result.status).toBe('DUPLICATE');
+    expect(service.getLatest(payload.stationCode)).toBeUndefined();
+    expect(service.hasProcessedMessage(payload.messageId)).toBe(true);
   });
 
-  it('rejects topic and payload station mismatch', () => {
+  it('rejects topic and payload station mismatch before persistence', async () => {
     const payload = createPayload();
-
-    expect(() =>
+    await expect(
       service.ingest(
         'airscope/v1/stations/JKT-AQ-001/telemetry',
         encode(payload),
       ),
-    ).toThrow(
+    ).rejects.toThrow(
       'Telemetry topic station code does not match payload station code.',
     );
+    expect(persist).not.toHaveBeenCalled();
   });
 
-  it('rejects an unexpected topic', () => {
+  it('rejects an unexpected topic before persistence', async () => {
     const payload = createPayload();
-
-    expect(() =>
+    await expect(
       service.ingest('airscope/v1/stations/BDG-AQ-001/status', encode(payload)),
-    ).toThrow(TelemetryTopicError);
+    ).rejects.toThrow(TelemetryTopicError);
+    expect(persist).not.toHaveBeenCalled();
   });
 
-  it('propagates payload validation failures', () => {
-    const payload = {
-      ...createPayload(),
-      schemaVersion: 2,
-    };
-
-    expect(() =>
+  it('propagates validation failures before persistence', async () => {
+    const payload = { ...createPayload(), schemaVersion: 2 };
+    await expect(
       service.ingest(
         'airscope/v1/stations/BDG-AQ-001/telemetry',
         Buffer.from(JSON.stringify(payload)),
       ),
-    ).toThrow(TelemetryValidationError);
+    ).rejects.toThrow(TelemetryValidationError);
+    expect(persist).not.toHaveBeenCalled();
   });
 
-  it('does not replace latest telemetry with an older observation', () => {
+  it('persists stale telemetry without replacing latest cache', async () => {
     const latest = createPayload();
-
     const older = createPayload({
       messageId: 'BDG-AQ-001-20261017T135500Z',
       observedAt: '2026-10-17T13:55:00.000Z',
     });
-
-    service.ingest('airscope/v1/stations/BDG-AQ-001/telemetry', encode(latest));
-
-    const result = service.ingest(
+    await service.ingest(
+      'airscope/v1/stations/BDG-AQ-001/telemetry',
+      encode(latest),
+    );
+    const result = await service.ingest(
       'airscope/v1/stations/BDG-AQ-001/telemetry',
       encode(older),
     );
-
     expect(result.status).toBe('STALE');
-
+    expect(persist).toHaveBeenCalledTimes(2);
     expect(service.getLatest('BDG-AQ-001')).toEqual(latest);
-
-    expect(service.hasProcessedMessage(older.messageId)).toBe(true);
   });
 
-  it('replaces latest telemetry with a newer observation', () => {
+  it('replaces latest cache with a newer persisted observation', async () => {
     const first = createPayload();
-
     const latest = createPayload({
       messageId: 'BDG-AQ-001-20261017T140500Z',
       observedAt: '2026-10-17T14:05:00.000Z',
     });
-
-    service.ingest('airscope/v1/stations/BDG-AQ-001/telemetry', encode(first));
-
-    const result = service.ingest(
+    await service.ingest(
+      'airscope/v1/stations/BDG-AQ-001/telemetry',
+      encode(first),
+    );
+    const result = await service.ingest(
       'airscope/v1/stations/BDG-AQ-001/telemetry',
       encode(latest),
     );
-
     expect(result.status).toBe('ACCEPTED');
-
     expect(service.getLatest('BDG-AQ-001')).toEqual(latest);
   });
 
-  it('supports a custom topic prefix', () => {
+  it('does not mutate cache when persistence fails', async () => {
     const payload = createPayload();
+    persist.mockRejectedValueOnce(new Error('database unavailable'));
+    await expect(
+      service.ingest(
+        'airscope/v1/stations/BDG-AQ-001/telemetry',
+        encode(payload),
+      ),
+    ).rejects.toThrow('database unavailable');
+    expect(service.getLatest(payload.stationCode)).toBeUndefined();
+    expect(service.hasProcessedMessage(payload.messageId)).toBe(false);
+  });
 
-    const result = service.ingest(
+  it('supports a custom topic prefix', async () => {
+    const payload = createPayload();
+    const result = await service.ingest(
       'demo/v2/stations/BDG-AQ-001/telemetry',
       encode(payload),
       'demo/v2',
     );
-
     expect(result.status).toBe('ACCEPTED');
   });
 
-  it('clears in-memory telemetry state', () => {
+  it('clears in-memory telemetry state without deleting persistence', async () => {
     const payload = createPayload();
-
-    service.ingest(
+    await service.ingest(
       'airscope/v1/stations/BDG-AQ-001/telemetry',
       encode(payload),
     );
-
     service.clear();
-
     expect(service.getLatest('BDG-AQ-001')).toBeUndefined();
-
     expect(service.hasProcessedMessage(payload.messageId)).toBe(false);
-
     expect(service.getStationCount()).toBe(0);
+    expect(persist).toHaveBeenCalledTimes(1);
   });
 });

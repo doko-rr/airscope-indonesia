@@ -1,3 +1,5 @@
+export const TELEMETRY_REPOSITORY = Symbol('TELEMETRY_REPOSITORY');
+
 export interface PersistedTelemetryInput {
   messageId: string;
   schemaVersion: number;
