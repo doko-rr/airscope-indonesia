@@ -5,7 +5,7 @@ import { SensorsService } from './sensors.service';
 
 function createTelemetryService(latest?: TelemetryPayloadV1): TelemetryService {
   return {
-    getLatest: vi.fn().mockReturnValue(latest),
+    getLatest: vi.fn().mockResolvedValue(latest),
   } as unknown as TelemetryService;
 }
 
@@ -93,10 +93,11 @@ describe('SensorsService history', () => {
     ).toThrow('Sensor station INVALID was not found');
   });
 
-  it('uses simulation when MQTT telemetry is unavailable', () => {
+  it('uses simulation when MQTT telemetry is unavailable', async () => {
     const fallbackService = new SensorsService(createTelemetryService());
 
-    const measurement = fallbackService.getLatestMeasurement('BDG-AQ-001');
+    const measurement =
+      await fallbackService.getLatestMeasurement('BDG-AQ-001');
 
     expect(measurement.source).toBe('SIMULATION');
 
@@ -105,12 +106,12 @@ describe('SensorsService history', () => {
     expect(measurement.messageId).toBeUndefined();
   });
 
-  it('uses latest MQTT telemetry when available', () => {
+  it('uses latest MQTT telemetry when available', async () => {
     const telemetry = createTelemetry();
 
     const mqttService = new SensorsService(createTelemetryService(telemetry));
 
-    const measurement = mqttService.getLatestMeasurement('bdg-aq-001');
+    const measurement = await mqttService.getLatestMeasurement('bdg-aq-001');
 
     expect(measurement).toEqual({
       stationCode: 'BDG-AQ-001',
@@ -126,12 +127,12 @@ describe('SensorsService history', () => {
     });
   });
 
-  it('does not query telemetry for an unknown station', () => {
+  it('does not query telemetry for an unknown station', async () => {
     const telemetryService = createTelemetryService(createTelemetry());
 
     const mqttService = new SensorsService(telemetryService);
 
-    expect(() => mqttService.getLatestMeasurement('UNKNOWN')).toThrow(
+    await expect(mqttService.getLatestMeasurement('UNKNOWN')).rejects.toThrow(
       'Sensor station UNKNOWN was not found',
     );
 

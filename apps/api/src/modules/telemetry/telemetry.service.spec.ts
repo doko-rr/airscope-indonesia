@@ -98,7 +98,7 @@ describe('TelemetryService', () => {
 
     expect(persist).toHaveBeenCalledWith({ ...payload, source: 'MQTT' });
     expect(result).toEqual({ status: 'ACCEPTED', payload });
-    expect(service.getLatest('BDG-AQ-001')).toEqual(payload);
+    expect(await service.getLatest('BDG-AQ-001')).toEqual(payload);
   });
 
   it('normalizes station code lookup', async () => {
@@ -107,7 +107,7 @@ describe('TelemetryService', () => {
       'airscope/v1/stations/BDG-AQ-001/telemetry',
       encode(payload),
     );
-    expect(service.getLatest(' bdg-aq-001 ')).toEqual(payload);
+    expect(await service.getLatest(' bdg-aq-001 ')).toEqual(payload);
   });
 
   it('returns duplicate without replacing cache', async () => {
@@ -121,7 +121,7 @@ describe('TelemetryService', () => {
       encode(payload),
     );
     expect(result.status).toBe('DUPLICATE');
-    expect(service.getLatest(payload.stationCode)).toBeUndefined();
+    expect(await service.getLatest(payload.stationCode)).toBeUndefined();
     expect(service.hasProcessedMessage(payload.messageId)).toBe(true);
   });
 
@@ -173,7 +173,7 @@ describe('TelemetryService', () => {
     );
     expect(result.status).toBe('STALE');
     expect(persist).toHaveBeenCalledTimes(2);
-    expect(service.getLatest('BDG-AQ-001')).toEqual(latest);
+    expect(await service.getLatest('BDG-AQ-001')).toEqual(latest);
   });
 
   it('replaces latest cache with a newer persisted observation', async () => {
@@ -191,7 +191,7 @@ describe('TelemetryService', () => {
       encode(latest),
     );
     expect(result.status).toBe('ACCEPTED');
-    expect(service.getLatest('BDG-AQ-001')).toEqual(latest);
+    expect(await service.getLatest('BDG-AQ-001')).toEqual(latest);
   });
 
   it('does not mutate cache when persistence fails', async () => {
@@ -203,7 +203,7 @@ describe('TelemetryService', () => {
         encode(payload),
       ),
     ).rejects.toThrow('database unavailable');
-    expect(service.getLatest(payload.stationCode)).toBeUndefined();
+    expect(await service.getLatest(payload.stationCode)).toBeUndefined();
     expect(service.hasProcessedMessage(payload.messageId)).toBe(false);
   });
 
@@ -217,6 +217,21 @@ describe('TelemetryService', () => {
     expect(result.status).toBe('ACCEPTED');
   });
 
+  it('loads latest telemetry from persistence on cache miss', async () => {
+    const payload = createPayload();
+    repository.findLatest = vi.fn(async () => record(payload));
+
+    await expect(service.getLatest('bdg-aq-001')).resolves.toEqual(payload);
+    expect(repository.findLatest).toHaveBeenCalledWith('BDG-AQ-001');
+
+    await service.getLatest('BDG-AQ-001');
+    expect(repository.findLatest).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns undefined when cache and persistence are empty', async () => {
+    await expect(service.getLatest('BDG-AQ-001')).resolves.toBeUndefined();
+  });
+
   it('clears in-memory telemetry state without deleting persistence', async () => {
     const payload = createPayload();
     await service.ingest(
@@ -224,7 +239,7 @@ describe('TelemetryService', () => {
       encode(payload),
     );
     service.clear();
-    expect(service.getLatest('BDG-AQ-001')).toBeUndefined();
+    expect(await service.getLatest('BDG-AQ-001')).toBeUndefined();
     expect(service.hasProcessedMessage(payload.messageId)).toBe(false);
     expect(service.getStationCount()).toBe(0);
     expect(persist).toHaveBeenCalledTimes(1);

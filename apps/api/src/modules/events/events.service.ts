@@ -26,9 +26,13 @@ export class EventsService {
 
   async findAll(referenceDate = new Date()): Promise<SensorEvent[]> {
     const stations = this.sensorsService.findAll();
-    const derived = stations.flatMap((station) =>
-      this.deriveStationEvents(station, referenceDate),
-    );
+    const derived = (
+      await Promise.all(
+        stations.map((station) =>
+          this.deriveStationEvents(station, referenceDate),
+        ),
+      )
+    ).flat();
 
     await this.synchronizeEvents(
       derived,
@@ -47,7 +51,7 @@ export class EventsService {
     referenceDate = new Date(),
   ): Promise<SensorEvent[]> {
     const station = this.sensorsService.findByCode(code);
-    const derived = this.deriveStationEvents(station, referenceDate);
+    const derived = await this.deriveStationEvents(station, referenceDate);
 
     await this.synchronizeEvents(derived, [station.code]);
 
@@ -222,11 +226,13 @@ export class EventsService {
     return event;
   }
 
-  private deriveStationEvents(
+  private async deriveStationEvents(
     station: SensorStation,
     referenceDate: Date,
-  ): SensorEvent[] {
-    const measurement = this.sensorsService.getLatestMeasurement(station.code);
+  ): Promise<SensorEvent[]> {
+    const measurement = await this.sensorsService.getLatestMeasurement(
+      station.code,
+    );
     const ageMinutes = this.measurementAgeMinutes(
       measurement.observedAt,
       referenceDate,

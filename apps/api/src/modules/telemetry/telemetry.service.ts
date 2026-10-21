@@ -7,6 +7,7 @@ import {
 import {
   TELEMETRY_REPOSITORY,
   type PersistedTelemetryInput,
+  type PersistedTelemetryRecord,
   type TelemetryRepository,
 } from './telemetry.repository';
 import { parseTelemetryTopic } from './telemetry-topic';
@@ -109,8 +110,27 @@ export class TelemetryService {
     return { status: 'ACCEPTED', payload };
   }
 
-  getLatest(stationCode: string): TelemetryPayloadV1 | undefined {
-    return this.latestByStation.get(stationCode.trim().toUpperCase());
+  async getLatest(
+    stationCode: string,
+  ): Promise<TelemetryPayloadV1 | undefined> {
+    const normalizedCode = stationCode.trim().toUpperCase();
+    const cached = this.latestByStation.get(normalizedCode);
+
+    if (cached) {
+      return cached;
+    }
+
+    const persisted = await this.repository.findLatest(normalizedCode);
+
+    if (!persisted) {
+      return undefined;
+    }
+
+    const payload = this.toPayload(persisted);
+    this.latestByStation.set(normalizedCode, payload);
+    this.processedMessageIds.add(payload.messageId);
+
+    return payload;
   }
 
   hasProcessedMessage(messageId: string): boolean {
@@ -124,6 +144,20 @@ export class TelemetryService {
   clear(): void {
     this.latestByStation.clear();
     this.processedMessageIds.clear();
+  }
+
+  private toPayload(record: PersistedTelemetryRecord): TelemetryPayloadV1 {
+    // Validate database primitives again at the contract boundary.
+    return decodeTelemetryPayloadV1(
+      JSON.stringify({
+        schemaVersion: record.schemaVersion,
+        messageId: record.messageId,
+        stationCode: record.stationCode,
+        observedAt: record.observedAt,
+        measurements: { ...record.measurements },
+        device: { ...record.device },
+      }),
+    );
   }
 
   private toPersistedInput(

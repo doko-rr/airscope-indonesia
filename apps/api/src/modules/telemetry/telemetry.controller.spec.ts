@@ -55,11 +55,11 @@ describe('TelemetryController', () => {
     });
   });
 
-  it('returns latest telemetry', () => {
+  it('returns latest telemetry', async () => {
     const payload = createPayload();
 
     const telemetryService = {
-      getLatest: vi.fn().mockReturnValue(payload),
+      getLatest: vi.fn().mockResolvedValue(payload),
     } as unknown as TelemetryService;
 
     const controller = new TelemetryController(
@@ -67,14 +67,14 @@ describe('TelemetryController', () => {
       {} as MqttTelemetryClient,
     );
 
-    expect(controller.getLatest('bdg-aq-001')).toEqual({
+    await expect(controller.getLatest('bdg-aq-001')).resolves.toEqual({
       data: payload,
     });
   });
 
-  it('throws for unavailable telemetry', () => {
+  it('throws for unavailable telemetry', async () => {
     const telemetryService = {
-      getLatest: vi.fn().mockReturnValue(undefined),
+      getLatest: vi.fn().mockResolvedValue(undefined),
     } as unknown as TelemetryService;
 
     const controller = new TelemetryController(
@@ -82,6 +82,8 @@ describe('TelemetryController', () => {
       {} as MqttTelemetryClient,
     );
 
-    expect(() => controller.getLatest('BDG-AQ-001')).toThrow(NotFoundException);
+    await expect(controller.getLatest('BDG-AQ-001')).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });

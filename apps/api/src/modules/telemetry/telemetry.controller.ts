@@ -21,11 +21,11 @@ export class TelemetryController {
   }
 
   @Get('stations/:stationCode/latest')
-  getLatest(
+  async getLatest(
     @Param('stationCode')
     stationCode: string,
   ) {
-    const telemetry = this.telemetryService.getLatest(stationCode);
+    const telemetry = await this.telemetryService.getLatest(stationCode);
 
     if (!telemetry) {
       throw new NotFoundException(

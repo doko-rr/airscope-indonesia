@@ -43,9 +43,9 @@ export class SensorsController {
   }
 
   @Get(':code/latest')
-  getLatestMeasurement(@Param('code') code: string) {
+  async getLatestMeasurement(@Param('code') code: string) {
     return {
-      data: this.sensorsService.getLatestMeasurement(code),
+      data: await this.sensorsService.getLatestMeasurement(code),
     };
   }
 

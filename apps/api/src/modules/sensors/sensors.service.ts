@@ -74,10 +74,10 @@ export class SensorsService {
     };
   }
 
-  getLatestMeasurement(code: string): SensorMeasurement {
+  async getLatestMeasurement(code: string): Promise<SensorMeasurement> {
     const station = this.findByCode(code);
 
-    const telemetry = this.telemetryService.getLatest(station.code);
+    const telemetry = await this.telemetryService.getLatest(station.code);
 
     if (!telemetry) {
       return simulateLatestMeasurement(station);
